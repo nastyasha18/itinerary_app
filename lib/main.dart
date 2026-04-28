@@ -18,7 +18,7 @@ class IniteraryApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.lightGrey,
         appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.dark,
+          backgroundColor: AppColors.navy,
           elevation: 0,
         ),
       ),
@@ -125,8 +125,9 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: AppColors.dark,
         selectedItemColor: AppColors.blue,
-        unselectedItemColor: AppColors.navy,
+        unselectedItemColor: AppColors.lightGrey,
         currentIndex: 0,
         items: [
           BottomNavigationBarItem(
