@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'disign/colors.dart';
 import 'details_screen.dart';
-import 'search/route_search_delegate.dart'; // ← НОВЫЙ ИМПОРТ
+import 'search/route_search_delegate.dart';
+import 'profile/profile_screen.dart'; // ← ИСПРАВЛЕН ИМПОРТ (убрал itnerary_app/)
 
 void main() {
   runApp(const IniteraryApp());
@@ -27,7 +28,6 @@ class IniteraryApp extends StatelessWidget {
   }
 }
 
-// ← ИЗМЕНИЛИ: StatefulWidget вместо StatelessWidget
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -36,15 +36,15 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  // ← НОВОЕ: список маршрутов
+  int _currentTabIndex = 0; // ← НОВОЕ: индекс текущего таба
   late final List<Map<String, dynamic>> routesList;
 
   @override
   void initState() {
     super.initState();
     routesList = [
-      {'title': 'Упавшие с небес', 'price': '249₽', 'isPopular': true},
-      {'title': 'Древнее лукоморье', 'price': '349₽', 'isPopular': false},
+      {'title': 'Звезды Югры', 'price': '349₽', 'isPopular': true},
+      {'title': 'Звезды Югры', 'price': '349₽', 'isPopular': true},
       {'title': 'Звезды Югры', 'price': '349₽', 'isPopular': true},
     ];
   }
@@ -52,83 +52,98 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Image.asset(
-              'assets/icons/logo.png',
-              height: 24,
-              width: 24,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Маршруты первого нефтяного',
-              style: TextStyle(fontSize: 16, color: AppColors.lightGrey),
-            ),
-          ],
-        ),
-        actions: [
-          // ← ИЗМЕНИЛИ: добавили логику поиска
-          IconButton(
-            icon: Image.asset('assets/icons/search.png', height: 24, width: 24),
-            onPressed: () async {
-              final result = await showSearch<String?>(
-                context: context,
-                delegate: RouteSearchDelegate(routesList),
-              );
-              if (result != null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Выбран маршрут: $result')),
-                );
-              }
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Маршруты',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: AppColors.dark,
+      appBar:
+          _currentTabIndex ==
+              0 // ← AppBar только для таба "Маршруты"
+          ? AppBar(
+              title: Row(
+                children: [
+                  Image.asset(
+                    'assets/icons/logo.png',
+                    height: 24,
+                    width: 24,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Маршруты первого нефтяного',
+                    style: TextStyle(fontSize: 16, color: AppColors.lightGrey),
+                  ),
+                ],
               ),
-            ),
-          ),
-          // ← ИЗМЕНИЛИ: динамический ListView
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: routesList.length,
-              itemBuilder: (context, index) {
-                final route = routesList[index];
-                return Column(
-                  children: [
-                    _buildRouteCard(
-                      context,
-                      title: route['title'],
-                      price: route['price'],
-                      isPopular: route['isPopular'],
+              actions: [
+                IconButton(
+                  icon: Image.asset(
+                    'assets/icons/search.png',
+                    height: 24,
+                    width: 24,
+                  ),
+                  onPressed: () async {
+                    final result = await showSearch<String?>(
+                      context: context,
+                      delegate: RouteSearchDelegate(routesList),
+                    );
+                    if (result != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Выбран маршрут: $result')),
+                      );
+                    }
+                  },
+                ),
+              ],
+            )
+          : null, // ← Нет AppBar для профиля
+      body: _currentTabIndex == 0
+          ? Column(
+              // ← Таб 0: Маршруты (ваш код без изменений)
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    'Маршруты',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.dark,
                     ),
-                    if (index < routesList.length - 1)
-                      const SizedBox(height: 16),
-                  ],
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: routesList.length,
+                    itemBuilder: (context, index) {
+                      final route = routesList[index];
+                      return Column(
+                        children: [
+                          _buildRouteCard(
+                            context,
+                            title: route['title'],
+                            price: route['price'],
+                            isPopular: route['isPopular'],
+                          ),
+                          if (index < routesList.length - 1)
+                            const SizedBox(height: 16),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            )
+          : const ProfileScreen(), // ← Таб 1: Профиль
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: AppColors.dark,
         selectedItemColor: AppColors.blue,
         unselectedItemColor: AppColors.lightGrey,
-        currentIndex: 0,
+        currentIndex: _currentTabIndex,
+        onTap: (index) {
+          // ← ЛОГИКА ПЕРЕКЛЮЧЕНИЯ ТАБОВ
+          setState(() {
+            _currentTabIndex = index;
+          });
+        },
         items: [
           BottomNavigationBarItem(
             icon: Image.asset(
@@ -155,7 +170,7 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // ← ВСЁ ОСТАЛОСЬ БЕЗ ИЗМЕНЕНИЙ
+  // ← _buildRouteCard БЕЗ ИЗМЕНЕНИЙ
   Widget _buildRouteCard(
     BuildContext context, {
     required String title,
