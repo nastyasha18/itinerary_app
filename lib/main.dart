@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'disign/colors.dart';
 import 'details_screen.dart';
 import 'search/route_search_delegate.dart';
-import 'profile/profile_screen.dart'; // ← ИСПРАВЛЕН ИМПОРТ (убрал itnerary_app/)
+import 'profile/profile_screen.dart';
+import 'menu/menu_screen.dart'; // ✅ НОВЫЙ ИМПОРТ
 
 void main() {
   runApp(const IniteraryApp());
@@ -36,7 +37,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentTabIndex = 0; // ← НОВОЕ: индекс текущего таба
+  int _currentTabIndex = 0;
   late final List<Map<String, dynamic>> routesList;
 
   @override
@@ -52,9 +53,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-          _currentTabIndex ==
-              0 // ← AppBar только для таба "Маршруты"
+      appBar: _currentTabIndex == 0
           ? AppBar(
               title: Row(
                 children: [
@@ -92,10 +91,9 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ],
             )
-          : null, // ← Нет AppBar для профиля
+          : null,
       body: _currentTabIndex == 0
           ? Column(
-              // ← Таб 0: Маршруты (ваш код без изменений)
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Padding(
@@ -132,14 +130,15 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ],
             )
-          : const ProfileScreen(), // ← Таб 1: Профиль
+          : _currentTabIndex == 1
+          ? const ProfileScreen() // ✅ Таб 1: Профиль
+          : const MenuScreen(), // ✅ Таб 2: Меню
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: AppColors.dark,
         selectedItemColor: AppColors.blue,
         unselectedItemColor: AppColors.lightGrey,
         currentIndex: _currentTabIndex,
         onTap: (index) {
-          // ← ЛОГИКА ПЕРЕКЛЮЧЕНИЯ ТАБОВ
           setState(() {
             _currentTabIndex = index;
           });
@@ -170,7 +169,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // ← _buildRouteCard БЕЗ ИЗМЕНЕНИЙ
   Widget _buildRouteCard(
     BuildContext context, {
     required String title,
