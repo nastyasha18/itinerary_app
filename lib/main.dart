@@ -3,7 +3,7 @@ import 'disign/colors.dart';
 import 'details_screen.dart';
 import 'search/route_search_delegate.dart';
 import 'profile/profile_screen.dart';
-import 'menu/menu_screen.dart'; // ✅ НОВЫЙ ИМПОРТ
+import 'menu/menu_screen.dart';
 
 void main() {
   runApp(const IniteraryApp());
@@ -44,9 +44,33 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     routesList = [
-      {'title': 'Звезды Югры', 'price': '349₽', 'isPopular': true},
-      {'title': 'Звезды Югры', 'price': '349₽', 'isPopular': true},
-      {'title': 'Звезды Югры', 'price': '349₽', 'isPopular': true},
+      {
+        'title': 'Звезды Югры',
+        'price': '349₽',
+        'isPopular': true,
+        'seats': 15,
+        'audience': 'Все возраста',
+        'description': 'Экскурсия по местам силы Югры',
+        'duration': '2.5 часа',
+      },
+      {
+        'title': 'Звезды Югры',
+        'price': '349₽',
+        'isPopular': true,
+        'seats': 12,
+        'audience': 'Семейная',
+        'description': 'Экскурсия по местам силы Югры',
+        'duration': '2 часа',
+      },
+      {
+        'title': 'Звезды Югры',
+        'price': '349₽',
+        'isPopular': true,
+        'seats': 20,
+        'audience': 'Взрослые',
+        'description': 'Экскурсия по местам силы Югры',
+        'duration': '3 часа',
+      },
     ];
   }
 
@@ -115,12 +139,7 @@ class _MainScreenState extends State<MainScreen> {
                       final route = routesList[index];
                       return Column(
                         children: [
-                          _buildRouteCard(
-                            context,
-                            title: route['title'],
-                            price: route['price'],
-                            isPopular: route['isPopular'],
-                          ),
+                          _buildRouteCard(context, route: route),
                           if (index < routesList.length - 1)
                             const SizedBox(height: 16),
                         ],
@@ -131,8 +150,8 @@ class _MainScreenState extends State<MainScreen> {
               ],
             )
           : _currentTabIndex == 1
-          ? const ProfileScreen() // ✅ Таб 1: Профиль
-          : const MenuScreen(), // ✅ Таб 2: Меню
+          ? const ProfileScreen()
+          : const MenuScreen(),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: AppColors.dark,
         selectedItemColor: AppColors.blue,
@@ -169,11 +188,10 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  // ✅ КАРТОЧКА МАРШРУТА С РАБОТАЮЩЕЙ КНОПКОЙ "КУПИТЬ"
   Widget _buildRouteCard(
     BuildContext context, {
-    required String title,
-    required String price,
-    required bool isPopular,
+    required Map<String, dynamic> route,
   }) {
     return GestureDetector(
       onTap: () {
@@ -216,7 +234,7 @@ class _MainScreenState extends State<MainScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        title,
+                        route['title'],
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -224,33 +242,44 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        price,
+                        route['price'],
                         style: const TextStyle(
                           fontSize: 16,
                           color: AppColors.navy,
                         ),
                       ),
-                      if (isPopular)
-                        const Text(
-                          '#часто посещают',
-                          style: TextStyle(
-                            color: AppColors.orange,
-                            fontSize: 12,
+                      if (route['isPopular'])
+                        const Padding(
+                          padding: EdgeInsets.only(top: 4),
+                          child: Text(
+                            '#часто посещают',
+                            style: TextStyle(
+                              color: AppColors.orange,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                     ],
                   ),
+                  // ✅ КНОПКА "КУПИТЬ" - ОТКРЫВАЕТ BOTTOM SHEET
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () => _showBookingBottomSheet(context, route),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.orange,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 8,
+                      ),
                     ),
                     child: const Text(
                       'Купить',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -259,6 +288,113 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  // ✅ BOTTOM SHEET БРОНИРОВАНИЯ (ВСЕ В ОДНОМ ФАЙЛЕ)
+  void _showBookingBottomSheet(
+    BuildContext context,
+    Map<String, dynamic> route,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.75,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Заголовок с кнопкой закрытия
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      route['title'],
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close, size: 28),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Информация о маршруте
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.lightGrey.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Мест доступно: ${route['seats']}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text('Аудитория: ${route['audience']}'),
+                      Text('Длительность: ${route['duration']}'),
+                      Text('Стоимость: ${route['price']}'),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                // Кнопка оплаты
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Бронь ${route['title']} оформлена! 💳',
+                          ),
+                          backgroundColor: AppColors.orange,
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.orange,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                    child: Text(
+                      'Оформить бронь ${route['price']}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
