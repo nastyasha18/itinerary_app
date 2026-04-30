@@ -23,10 +23,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.lightGrey,
       appBar: AppBar(
-        /* leading: IconButton(
-          icon: Image.asset('assets/icons/back.png', height: 24, width: 24),
-          onPressed: () => Navigator.of(context).pop(), // Вернуться в main
-        ), */
         title: const Text(
           'Мой профиль',
           style: TextStyle(color: AppColors.lightGrey, fontSize: 16),
