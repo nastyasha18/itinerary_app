@@ -18,8 +18,9 @@ class DetailsScreen extends StatelessWidget {
                   color: AppColors.navy,
                   image: DecorationImage(
                     image: NetworkImage(
-                      'https://via.placeholder.com/400x300',
-                    ), // Замени на свое фото
+                      //'https://via.placeholder.com/400x300',
+                      'https://oboi-ma.ru/f/product/1407_3.jpg',
+                    ),
                     fit: BoxFit.cover,
                   ),
                 ),

@@ -4,6 +4,8 @@ import 'details_screen.dart';
 import 'search/route_search_delegate.dart';
 import 'profile/profile_screen.dart';
 import 'menu/menu_screen.dart';
+import 'widgets/active_filters_chips.dart';
+import 'widgets/route_filters_sheet.dart';
 
 void main() {
   runApp(const IniteraryApp());
@@ -38,7 +40,12 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentTabIndex = 0;
+
   late final List<Map<String, dynamic>> routesList;
+
+  String? selectedAudience;
+  bool onlyPopular = false;
+  bool onlyShort = false;
 
   @override
   void initState() {
@@ -49,9 +56,9 @@ class _MainScreenState extends State<MainScreen> {
         'price': '349₽',
         'isPopular': true,
         'seats': 15,
-        'audience': 'Все возраста',
+        'audience': 'Турист',
         'description': 'Экскурсия по местам силы Югры',
-        'duration': '2.5 часа',
+        'duration': '30 минут',
       },
       {
         'title': 'Звезды Югры',
@@ -60,18 +67,47 @@ class _MainScreenState extends State<MainScreen> {
         'seats': 12,
         'audience': 'Семейная',
         'description': 'Экскурсия по местам силы Югры',
-        'duration': '2 часа',
+        'duration': '~1.5 часа',
       },
       {
         'title': 'Звезды Югры',
         'price': '349₽',
         'isPopular': true,
         'seats': 20,
-        'audience': 'Взрослые',
+        'audience': 'Студенты',
         'description': 'Экскурсия по местам силы Югры',
-        'duration': '3 часа',
+        'duration': '30 минут',
+      },
+      {
+        'title': 'Звезды Югры',
+        'price': '349₽',
+        'isPopular': true,
+        'seats': 20,
+        'audience': 'Студенты',
+        'description': 'Экскурсия по местам силы Югры',
+        'duration': '30 минут',
       },
     ];
+  }
+
+  List<Map<String, dynamic>> get filteredRoutes {
+    return routesList.where((route) {
+      final audienceOk =
+          selectedAudience == null || route['audience'] == selectedAudience;
+
+      final popularOk = !onlyPopular || route['isPopular'] == true;
+
+      final duration = route['duration'] as String;
+      final normalized = duration
+          .replaceAll(' часа', '')
+          .replaceAll(' час', '')
+          .replaceAll(',', '.');
+      final hours = double.tryParse(normalized) ?? 0;
+
+      final shortOk = !onlyShort || hours <= 2.5;
+
+      return audienceOk && popularOk && shortOk;
+    }).toList();
   }
 
   @override
@@ -95,6 +131,31 @@ class _MainScreenState extends State<MainScreen> {
                 ],
               ),
               actions: [
+                IconButton(
+                  icon: const Icon(Icons.filter_list, color: AppColors.blue),
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) {
+                        return RouteFiltersSheet(
+                          selectedAudience: selectedAudience,
+                          onlyPopular: onlyPopular,
+                          onlyShort: onlyShort,
+                          onApply: (audience, popular, short) {
+                            setState(() {
+                              selectedAudience = audience;
+                              onlyPopular = popular;
+                              onlyShort = short;
+                            });
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
                 IconButton(
                   icon: Image.asset(
                     'assets/icons/search.png',
@@ -131,16 +192,37 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ),
                 ),
+                ActiveFiltersChips(
+                  selectedAudience: selectedAudience,
+                  onlyPopular: onlyPopular,
+                  onlyShort: onlyShort,
+                  onAudienceSelected: (value) {
+                    setState(() => selectedAudience = value);
+                  },
+                  onPopularChanged: (value) {
+                    setState(() => onlyPopular = value);
+                  },
+                  onShortChanged: (value) {
+                    setState(() => onlyShort = value);
+                  },
+                  onClearAll: () {
+                    setState(() {
+                      selectedAudience = null;
+                      onlyPopular = false;
+                      onlyShort = false;
+                    });
+                  },
+                ),
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: routesList.length,
+                    itemCount: filteredRoutes.length,
                     itemBuilder: (context, index) {
-                      final route = routesList[index];
+                      final route = filteredRoutes[index];
                       return Column(
                         children: [
                           _buildRouteCard(context, route: route),
-                          if (index < routesList.length - 1)
+                          if (index < filteredRoutes.length - 1)
                             const SizedBox(height: 16),
                         ],
                       );
@@ -188,7 +270,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // ✅ КАРТОЧКА МАРШРУТА С РАБОТАЮЩЕЙ КНОПКОЙ "КУПИТЬ"
   Widget _buildRouteCard(
     BuildContext context, {
     required Map<String, dynamic> route,
@@ -261,7 +342,6 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                     ],
                   ),
-                  // ✅ КНОПКА "КУПИТЬ" - ОТКРЫВАЕТ BOTTOM SHEET
                   ElevatedButton(
                     onPressed: () => _showBookingBottomSheet(context, route),
                     style: ElevatedButton.styleFrom(
@@ -291,7 +371,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // ✅ BOTTOM SHEET БРОНИРОВАНИЯ (ВСЕ В ОДНОМ ФАЙЛЕ)
   void _showBookingBottomSheet(
     BuildContext context,
     Map<String, dynamic> route,
@@ -312,7 +391,6 @@ class _MainScreenState extends State<MainScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Заголовок с кнопкой закрытия
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -330,8 +408,6 @@ class _MainScreenState extends State<MainScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
-
-                // Информация о маршруте
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
@@ -355,10 +431,7 @@ class _MainScreenState extends State<MainScreen> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 30),
-
-                // Кнопка оплаты
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
