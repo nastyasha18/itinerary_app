@@ -133,6 +133,14 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  void _applyFilters(Set<String> newFilters) {
+    setState(() {
+      selectedFilters
+        ..clear()
+        ..addAll(newFilters);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -171,7 +179,7 @@ class _MainScreenState extends State<MainScreen> {
                       builder: (context) {
                         return RouteFiltersSheet(
                           selectedFilters: selectedFilters,
-                          onToggleFilter: _toggleFilter,
+                          onApply: _applyFilters,
                           onClearAll: _clearAllFilters,
                         );
                       },
