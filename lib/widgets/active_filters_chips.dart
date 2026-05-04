@@ -56,6 +56,11 @@ class ActiveFiltersChips extends StatelessWidget {
                     label: Text(filter),
                     selected: isSelected,
                     onSelected: (_) => onToggleFilter(filter),
+                    backgroundColor: AppColors.whiteGrey,
+                    selectedColor: AppColors.orange,
+                    labelStyle: TextStyle(
+                      color: isSelected ? AppColors.whiteGrey : AppColors.dark,
+                    ),
                   ),
                 );
               }).toList(),
