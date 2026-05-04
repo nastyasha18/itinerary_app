@@ -58,7 +58,7 @@ class DetailsScreen extends StatelessWidget {
             child: Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.lightGrey,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
               ),
               child: SingleChildScrollView(
@@ -74,16 +74,27 @@ class DetailsScreen extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Icon(Icons.access_time, color: AppColors.blue),
+                        SizedBox(width: 5),
+                        Text(
+                          '70 минут',
+                          style: TextStyle(color: AppColors.navy),
+                        ),
+                      ],
+                    ),
+                    Divider(height: 30, color: AppColors.lightGrey),
                     Text(
                       'Мемориальные предметы, документы и фотографии выдающихся людей.',
-                      style: TextStyle(fontSize: 16, color: AppColors.navy),
+                      style: TextStyle(fontSize: 16, color: AppColors.dark),
                     ),
                     Divider(height: 30),
                     Text(
                       'В этой экскурсии:',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        //fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 15),

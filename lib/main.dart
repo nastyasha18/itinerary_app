@@ -302,8 +302,13 @@ class _MainScreenState extends State<MainScreen> {
                 color: AppColors.navy,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
               ),
-              child: const Center(
-                child: Icon(Icons.landscape, color: Colors.white, size: 50),
+              //child: const Center(
+              //child: Icon(Icons.landscape, color: Colors.white, size: 50),
+              //),
+              child: Image.network(
+                'https://oboi-ma.ru/f/product/1407_3.jpg',
+                fit: BoxFit.cover, // развертка картинки
+                width: double.infinity,
               ),
             ),
             Padding(
