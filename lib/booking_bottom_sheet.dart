@@ -29,7 +29,6 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
     }
   }
 
-  // ✅ Логика выбора времени
   // выбор времени
   Future<void> _selectTime() async {
     final TimeOfDay? picked = await showTimePicker(
