@@ -3,21 +3,17 @@ import '../disign/colors.dart';
 
 class ActiveFiltersChips extends StatelessWidget {
   final String? selectedAudience;
-  final bool onlyPopular;
-  final bool onlyShort;
+  final String? selectedDuration;
   final ValueChanged<String?> onAudienceSelected;
-  final ValueChanged<bool> onPopularChanged;
-  final ValueChanged<bool> onShortChanged;
+  final ValueChanged<String?> onDurationSelected;
   final VoidCallback onClearAll;
 
   const ActiveFiltersChips({
     super.key,
     required this.selectedAudience,
-    required this.onlyPopular,
-    required this.onlyShort,
+    required this.selectedDuration,
     required this.onAudienceSelected,
-    required this.onPopularChanged,
-    required this.onShortChanged,
+    required this.onDurationSelected,
     required this.onClearAll,
   });
 
@@ -44,41 +40,65 @@ class ActiveFiltersChips extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              ChoiceChip(
-                label: const Text('Все'),
-                selected: selectedAudience == null,
-                onSelected: (_) => onAudienceSelected(null),
-              ),
-              ChoiceChip(
-                label: const Text('Студенты'),
-                selected: selectedAudience == 'Студенты',
-                onSelected: (_) => onAudienceSelected('Студенты'),
-              ),
-              ChoiceChip(
-                label: const Text('Семейная'),
-                selected: selectedAudience == 'Семейная',
-                onSelected: (_) => onAudienceSelected('Семейная'),
-              ),
-              ChoiceChip(
-                label: const Text('Турист'),
-                selected: selectedAudience == 'Турист',
-                onSelected: (_) => onAudienceSelected('Турист'),
-              ),
-              FilterChip(
-                label: const Text('30 минут'),
-                selected: onlyPopular,
-                onSelected: onPopularChanged,
-              ),
-              FilterChip(
-                label: const Text('~1.5 часа'),
-                selected: onlyPopular,
-                onSelected: onPopularChanged,
-              ),
-            ],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                FilterChip(
+                  label: const Text('Все'),
+                  selected:
+                      selectedAudience == null && selectedDuration == null,
+                  onSelected: (value) {
+                    if (value) {
+                      onAudienceSelected(null);
+                      onDurationSelected(null);
+                    } else {
+                      onClearAll();
+                    }
+                  },
+                ),
+                const SizedBox(width: 8),
+                FilterChip(
+                  label: const Text('Студенты'),
+                  selected: selectedAudience == 'Студенты',
+                  onSelected: (value) {
+                    onAudienceSelected(value ? 'Студенты' : null);
+                  },
+                ),
+                const SizedBox(width: 8),
+                FilterChip(
+                  label: const Text('Семейная'),
+                  selected: selectedAudience == 'Семейная',
+                  onSelected: (value) {
+                    onAudienceSelected(value ? 'Семейная' : null);
+                  },
+                ),
+                const SizedBox(width: 8),
+                FilterChip(
+                  label: const Text('Турист'),
+                  selected: selectedAudience == 'Турист',
+                  onSelected: (value) {
+                    onAudienceSelected(value ? 'Турист' : null);
+                  },
+                ),
+                const SizedBox(width: 8),
+                FilterChip(
+                  label: const Text('30 минут'),
+                  selected: selectedDuration == '30 минут',
+                  onSelected: (value) {
+                    onDurationSelected(value ? '30 минут' : null);
+                  },
+                ),
+                const SizedBox(width: 8),
+                FilterChip(
+                  label: const Text('~1.5 часа'),
+                  selected: selectedDuration == '~1.5 часа',
+                  onSelected: (value) {
+                    onDurationSelected(value ? '~1.5 часа' : null);
+                  },
+                ),
+              ],
+            ),
           ),
         ],
       ),

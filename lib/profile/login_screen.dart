@@ -5,6 +5,7 @@ import '../disign/colors.dart';
 class LoginScreen extends StatelessWidget {
   final VoidCallback onLogin;
   final VoidCallback onGoToRegister; // ✅ Новый callback!
+
   const LoginScreen({
     super.key,
     required this.onLogin,
@@ -16,62 +17,64 @@ class LoginScreen extends StatelessWidget {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/icons/logo.png', height: 64, width: 64),
-            const SizedBox(height: 32),
-            const Text(
-              'Вход в профиль',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: AppColors.dark,
+        child: SingleChildScrollView(
+          // ✅ добавлен
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset('assets/icons/logo.png', height: 64, width: 64),
+              const SizedBox(height: 32),
+              const Text(
+                'Вход в профиль',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.dark,
+                ),
               ),
-            ),
-            const SizedBox(height: 48),
-            _buildTextField('Email или телефон', Icons.email_outlined),
-            const SizedBox(height: 16),
-            _buildTextField('Пароль', Icons.lock_outline, obscureText: true),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: onLogin, // ✅ Как кнопка "Войти"
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.navy,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 48),
+              _buildTextField('Email или телефон', Icons.email_outlined),
+              const SizedBox(height: 16),
+              _buildTextField('Пароль', Icons.lock_outline, obscureText: true),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: onLogin,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.navy,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Войти',
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
                 ),
-                child: const Text(
-                  'Войти',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            // ✅ Полная переадресация как с кнопкой!
-            GestureDetector(
-              onTap: onGoToRegister, // ✅ Точно как onLogin!
-              child: RichText(
-                text: TextSpan(
-                  style: const TextStyle(color: AppColors.dark, fontSize: 16),
-                  children: [
-                    const TextSpan(text: 'Нет аккаунта? '),
-                    const TextSpan(
-                      text: 'Зарегистрируйтесь',
-                      style: TextStyle(
-                        color: AppColors.orange,
-                        fontWeight: FontWeight.bold,
+              const SizedBox(height: 24),
+              GestureDetector(
+                onTap: onGoToRegister,
+                child: RichText(
+                  text: TextSpan(
+                    style: const TextStyle(color: AppColors.dark, fontSize: 16),
+                    children: [
+                      const TextSpan(text: 'Нет аккаунта? '),
+                      const TextSpan(
+                        text: 'Зарегистрируйтесь',
+                        style: TextStyle(
+                          color: AppColors.orange,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

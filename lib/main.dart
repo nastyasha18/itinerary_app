@@ -44,8 +44,7 @@ class _MainScreenState extends State<MainScreen> {
   late final List<Map<String, dynamic>> routesList;
 
   String? selectedAudience;
-  bool onlyPopular = false;
-  bool onlyShort = false;
+  String? selectedDuration;
 
   @override
   void initState() {
@@ -95,18 +94,10 @@ class _MainScreenState extends State<MainScreen> {
       final audienceOk =
           selectedAudience == null || route['audience'] == selectedAudience;
 
-      final popularOk = !onlyPopular || route['isPopular'] == true;
+      final durationOk =
+          selectedDuration == null || route['duration'] == selectedDuration;
 
-      final duration = route['duration'] as String;
-      final normalized = duration
-          .replaceAll(' часа', '')
-          .replaceAll(' час', '')
-          .replaceAll(',', '.');
-      final hours = double.tryParse(normalized) ?? 0;
-
-      final shortOk = !onlyShort || hours <= 2.5;
-
-      return audienceOk && popularOk && shortOk;
+      return audienceOk && durationOk;
     }).toList();
   }
 
@@ -124,9 +115,16 @@ class _MainScreenState extends State<MainScreen> {
                     fit: BoxFit.contain,
                   ),
                   const SizedBox(width: 8),
-                  const Text(
-                    'Маршруты первого нефтяного',
-                    style: TextStyle(fontSize: 16, color: AppColors.lightGrey),
+                  const Flexible(
+                    child: Text(
+                      'Маршруты первого нефтяного',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.lightGrey,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
@@ -141,13 +139,11 @@ class _MainScreenState extends State<MainScreen> {
                       builder: (context) {
                         return RouteFiltersSheet(
                           selectedAudience: selectedAudience,
-                          onlyPopular: onlyPopular,
-                          onlyShort: onlyShort,
-                          onApply: (audience, popular, short) {
+                          selectedDuration: selectedDuration,
+                          onApply: (audience, duration) {
                             setState(() {
                               selectedAudience = audience;
-                              onlyPopular = popular;
-                              onlyShort = short;
+                              selectedDuration = duration;
                             });
                             Navigator.pop(context);
                           },
@@ -194,22 +190,17 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 ActiveFiltersChips(
                   selectedAudience: selectedAudience,
-                  onlyPopular: onlyPopular,
-                  onlyShort: onlyShort,
+                  selectedDuration: selectedDuration,
                   onAudienceSelected: (value) {
                     setState(() => selectedAudience = value);
                   },
-                  onPopularChanged: (value) {
-                    setState(() => onlyPopular = value);
-                  },
-                  onShortChanged: (value) {
-                    setState(() => onlyShort = value);
+                  onDurationSelected: (value) {
+                    setState(() => selectedDuration = value);
                   },
                   onClearAll: () {
                     setState(() {
                       selectedAudience = null;
-                      onlyPopular = false;
-                      onlyShort = false;
+                      selectedDuration = null;
                     });
                   },
                 ),
@@ -302,68 +293,71 @@ class _MainScreenState extends State<MainScreen> {
                 color: AppColors.navy,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
               ),
-              //child: const Center(
-              //child: Icon(Icons.landscape, color: Colors.white, size: 50),
-              //),
               child: Image.network(
                 'https://oboi-ma.ru/f/product/1407_3.jpg',
-                fit: BoxFit.cover, // развертка картинки
+                fit: BoxFit.cover,
                 width: double.infinity,
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        route['title'],
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        route['price'],
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: AppColors.navy,
-                        ),
-                      ),
-                      if (route['isPopular'])
-                        const Padding(
-                          padding: EdgeInsets.only(top: 4),
-                          child: Text(
-                            '#часто посещают',
-                            style: TextStyle(
-                              color: AppColors.orange,
-                              fontSize: 12,
-                            ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          route['title'],
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                    ],
-                  ),
-                  ElevatedButton(
-                    onPressed: () => _showBookingBottomSheet(context, route),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.orange,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 8,
-                      ),
+                        const SizedBox(height: 4),
+                        Text(
+                          route['price'],
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: AppColors.navy,
+                          ),
+                        ),
+                        if (route['isPopular'])
+                          const Padding(
+                            padding: EdgeInsets.only(top: 4),
+                            child: Text(
+                              '#часто посещают',
+                              style: TextStyle(
+                                color: AppColors.orange,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                    child: const Text(
-                      'Купить',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                  ),
+                  SizedBox(
+                    width: 80,
+                    child: ElevatedButton(
+                      onPressed: () => _showBookingBottomSheet(context, route),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.orange,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 8,
+                        ),
+                      ),
+                      child: const Text(
+                        'Купить',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ),

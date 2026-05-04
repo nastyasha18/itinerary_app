@@ -3,15 +3,13 @@ import '../disign/colors.dart';
 
 class RouteFiltersSheet extends StatefulWidget {
   final String? selectedAudience;
-  final bool onlyPopular;
-  final bool onlyShort;
-  final void Function(String? audience, bool popular, bool short) onApply;
+  final String? selectedDuration;
+  final void Function(String? audience, String? duration) onApply;
 
   const RouteFiltersSheet({
     super.key,
     required this.selectedAudience,
-    required this.onlyPopular,
-    required this.onlyShort,
+    required this.selectedDuration,
     required this.onApply,
   });
 
@@ -21,15 +19,13 @@ class RouteFiltersSheet extends StatefulWidget {
 
 class _RouteFiltersSheetState extends State<RouteFiltersSheet> {
   late String? tempAudience;
-  late bool tempPopular;
-  late bool tempShort;
+  late String? tempDuration;
 
   @override
   void initState() {
     super.initState();
     tempAudience = widget.selectedAudience;
-    tempPopular = widget.onlyPopular;
-    tempShort = widget.onlyShort;
+    tempDuration = widget.selectedDuration;
   }
 
   @override
@@ -60,8 +56,7 @@ class _RouteFiltersSheetState extends State<RouteFiltersSheet> {
                   onPressed: () {
                     setState(() {
                       tempAudience = null;
-                      tempPopular = false;
-                      tempShort = false;
+                      tempDuration = null;
                     });
                   },
                   child: const Text('Сбросить'),
@@ -74,31 +69,37 @@ class _RouteFiltersSheetState extends State<RouteFiltersSheet> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ChoiceChip(
-                  label: const Text('Все'),
-                  selected: tempAudience == null,
-                  onSelected: (_) => setState(() => tempAudience = null),
-                ),
-                ChoiceChip(
-                  label: const Text('Студенты'),
-                  selected: tempAudience == 'Студенты',
-                  onSelected: (_) => setState(() => tempAudience = 'Студенты'),
-                ),
-                ChoiceChip(
-                  label: const Text('Семейная'),
-                  selected: tempAudience == 'Семейная',
-                  onSelected: (_) => setState(() => tempAudience = 'Семейная'),
-                ),
-                ChoiceChip(
-                  label: const Text('Турист'),
-                  selected: tempAudience == 'Турист',
-                  onSelected: (_) => setState(() => tempAudience = 'Турист'),
-                ),
-              ],
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  ChoiceChip(
+                    label: const Text('Все'),
+                    selected: tempAudience == null,
+                    onSelected: (_) => setState(() => tempAudience = null),
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: const Text('Студенты'),
+                    selected: tempAudience == 'Студенты',
+                    onSelected: (_) =>
+                        setState(() => tempAudience = 'Студенты'),
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: const Text('Семейная'),
+                    selected: tempAudience == 'Семейная',
+                    onSelected: (_) =>
+                        setState(() => tempAudience = 'Семейная'),
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: const Text('Турист'),
+                    selected: tempAudience == 'Турист',
+                    onSelected: (_) => setState(() => tempAudience = 'Турист'),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 20),
             const Text(
@@ -106,28 +107,38 @@ class _RouteFiltersSheetState extends State<RouteFiltersSheet> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                FilterChip(
-                  label: const Text('30 минут'),
-                  selected: tempPopular,
-                  onSelected: (value) => setState(() => tempPopular = value),
-                ),
-                FilterChip(
-                  label: const Text('~1.5 часа'),
-                  selected: tempPopular,
-                  onSelected: (value) => setState(() => tempShort = value),
-                ),
-              ],
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  ChoiceChip(
+                    label: const Text('Все'),
+                    selected: tempDuration == null,
+                    onSelected: (_) => setState(() => tempDuration = null),
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: const Text('30 минут'),
+                    selected: tempDuration == '30 минут',
+                    onSelected: (_) =>
+                        setState(() => tempDuration = '30 минут'),
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: const Text('~1.5 часа'),
+                    selected: tempDuration == '~1.5 часа',
+                    onSelected: (_) =>
+                        setState(() => tempDuration = '~1.5 часа'),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  widget.onApply(tempAudience, tempPopular, tempShort);
+                  widget.onApply(tempAudience, tempDuration);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.orange,
