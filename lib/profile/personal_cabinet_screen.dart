@@ -34,14 +34,14 @@ class PersonalCabinetScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Настя Теш',
+                        'Настёна Теш',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        'na.stya@email.com',
+                        'ateshkina@bk.ru',
                         style: TextStyle(fontSize: 16, color: AppColors.navy),
                       ),
                     ],
@@ -59,8 +59,7 @@ class PersonalCabinetScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _buildPurchaseCard('Упавшие с небес', '249₽', true),
-            _buildPurchaseCard('Звезды Югры', '349₽', true),
+            _buildPurchaseCard('Звезды Югры', '349₽', false),
             const Spacer(),
             SizedBox(
               width: double.infinity,
@@ -68,14 +67,14 @@ class PersonalCabinetScreen extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: onLogout, // ✅ Адресация на вход!
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.dark,
+                  backgroundColor: AppColors.navy,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: const Text(
                   'Выйти',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
+                  style: TextStyle(fontSize: 18, color: AppColors.lightGrey),
                 ),
               ),
             ),
