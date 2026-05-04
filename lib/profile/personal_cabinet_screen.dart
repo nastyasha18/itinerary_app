@@ -1,9 +1,31 @@
 import 'package:flutter/material.dart';
 import '../disign/colors.dart';
+import './review_bottom_sheet.dart';
 
-class PersonalCabinetScreen extends StatelessWidget {
+class PersonalCabinetScreen extends StatefulWidget {
   final VoidCallback? onLogout;
   const PersonalCabinetScreen({super.key, this.onLogout});
+
+  @override
+  State<PersonalCabinetScreen> createState() => _PersonalCabinetScreenState();
+}
+
+class _PersonalCabinetScreenState extends State<PersonalCabinetScreen> {
+  final List<Map<String, dynamic>> _purchases = [
+    {'title': 'Звезды Югры', 'price': '349₽', 'active': false},
+    {'title': 'Маршрут по Ханты-Мансийску', 'price': '499₽', 'active': true},
+    {'title': 'Тур по Сургуту', 'price': '599₽', 'active': false},
+  ];
+
+  void _handleReviewSubmitted(
+    int rating,
+    String comment,
+    List<String> selectedOptions,
+  ) {
+    debugPrint('Rating: $rating');
+    debugPrint('Comment: $comment');
+    debugPrint('Selected: $selectedOptions');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,13 +81,61 @@ class PersonalCabinetScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _buildPurchaseCard('Звезды Югры', '349₽', false),
-            const Spacer(),
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: _purchases.length,
+                itemBuilder: (context, index) {
+                  final purchase = _purchases[index];
+                  return Stack(
+                    children: [
+                      _buildPurchaseCard(
+                        purchase['title'] as String,
+                        purchase['price'] as String,
+                        purchase['active'] as bool,
+                      ),
+                      if (!(purchase['active'] as bool))
+                        Positioned(
+                          right: 8,
+                          bottom: 8,
+                          child: GestureDetector(
+                            onTap: () => showReviewBottomSheet(
+                              context,
+                              routeName: purchase['title'] as String,
+                              onReviewSubmitted: _handleReviewSubmitted,
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppColors.orange,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.orange.withOpacity(0.4),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.rate_review_rounded,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: onLogout, // ✅ Адресация на вход!
+                onPressed: widget.onLogout,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.navy,
                   shape: RoundedRectangleBorder(
@@ -105,11 +175,15 @@ class PersonalCabinetScreen extends StatelessWidget {
             Container(
               height: 48,
               width: 48,
-              decoration: const BoxDecoration(
-                color: AppColors.navy,
+              decoration: BoxDecoration(
+                color: active ? AppColors.navy : Colors.grey[400],
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.play_arrow, color: Colors.white),
+              child: Icon(
+                active ? Icons.play_arrow : Icons.check,
+                color: Colors.white,
+                size: 24,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -127,11 +201,13 @@ class PersonalCabinetScreen extends StatelessWidget {
                     price,
                     style: const TextStyle(fontSize: 16, color: AppColors.navy),
                   ),
-                  if (active)
-                    const Text(
-                      'Активна',
-                      style: TextStyle(color: AppColors.orange, fontSize: 12),
+                  Text(
+                    active ? 'Активна' : 'Пройдено',
+                    style: TextStyle(
+                      color: active ? AppColors.orange : Colors.grey[600],
+                      fontSize: 12,
                     ),
+                  ),
                 ],
               ),
             ),
