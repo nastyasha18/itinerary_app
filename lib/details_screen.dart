@@ -175,7 +175,7 @@ class ExhibitTimelineItem extends StatelessWidget {
     Navigator.push(
       context,
       PageRouteBuilder(
-        opaque: false, // Делает экран "прозрачным" для наложения
+        opaque: false, // Прозрачность экрана
         pageBuilder: (_, __, ___) => Scaffold(
           backgroundColor: Colors.transparent,
           body: Stack(

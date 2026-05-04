@@ -1,4 +1,3 @@
-// booking_bottom_sheet.dart
 import 'package:flutter/material.dart';
 import '../disign/colors.dart';
 
@@ -15,7 +14,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
   DateTime selectedDate = DateTime.now();
   TimeOfDay selectedTime = TimeOfDay.now();
 
-  // ✅ Логика выбора даты
+  //  выбор даты
   Future<void> _selectDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -31,6 +30,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
   }
 
   // ✅ Логика выбора времени
+  // выбор времени
   Future<void> _selectTime() async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -43,20 +43,18 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
     }
   }
 
-  // ✅ Форматирование даты для отображения
   String _formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
   }
 
-  // ✅ Форматирование времени для отображения
   String _formatTime(TimeOfDay time) {
     return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
   }
 
-  // ✅ Обработка оплаты
+  // Обработка оплаты
   void _handlePayment() {
     Navigator.pop(context);
-    // TODO: Переход к экрану оплаты
+    // Переход к экрану оплаты
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -78,7 +76,6 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
       ),
       child: Column(
         children: [
-          // ✅ Ручка для перетаскивания
           const SizedBox(height: 20),
           Container(
             width: 50,
@@ -90,7 +87,6 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
           ),
           const SizedBox(height: 20),
 
-          // ✅ Заголовок с кнопкой закрытия
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
@@ -113,14 +109,12 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
           ),
           const SizedBox(height: 20),
 
-          // ✅ Основной контент
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Информация о маршруте
                   ...[
                     'Мест',
                     'Аудитория',
@@ -142,7 +136,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
 
                   const SizedBox(height: 30),
 
-                  // ✅ Выбор даты и времени
+                  //  Выбор даты и времени
                   Text(
                     'Выберите дату и время',
                     style: TextStyle(
@@ -171,7 +165,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
             ),
           ),
 
-          // ✅ Кнопка оплаты
+          // ссылка на оплату
           Container(
             width: double.infinity,
             margin: const EdgeInsets.all(20),
@@ -199,7 +193,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
     );
   }
 
-  // ✅ Виджет карточки информации
+  // Виджет карточки информации
   Widget _buildInfoCard(String title, String value) {
     return Container(
       width: double.infinity,
@@ -236,7 +230,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
     );
   }
 
-  // ✅ Виджет строки даты/времени
+  // дата и время
   Widget _buildDateTimeRow(String label, String value, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,

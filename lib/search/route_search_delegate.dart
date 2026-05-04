@@ -76,7 +76,7 @@ class RouteSearchDelegate extends SearchDelegate<String?> {
           width: 1,
         ),
         borderRadius: BorderRadius.circular(8),
-        color: AppColors.dark.withOpacity(0.1), // Легкий фон
+        color: AppColors.dark.withOpacity(0.1),
       ),
       child: ListTile(
         title: Text(

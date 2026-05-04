@@ -4,7 +4,7 @@ import '../disign/colors.dart';
 
 class LoginScreen extends StatelessWidget {
   final VoidCallback onLogin;
-  final VoidCallback onGoToRegister; // ✅ Новый callback!
+  final VoidCallback onGoToRegister;
 
   const LoginScreen({
     super.key,
@@ -18,7 +18,6 @@ class LoginScreen extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: SingleChildScrollView(
-          // ✅ добавлен
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

@@ -10,11 +10,7 @@ class PartnersScreen extends StatelessWidget {
       backgroundColor: AppColors.lightGrey,
       appBar: AppBar(
         leading: IconButton(
-          icon: Image.asset(
-            'assets/icons/back.png', // ← ЗАМЕНИТЕ НА СВОЮ
-            height: 24,
-            width: 24,
-          ),
+          icon: Image.asset('assets/icons/back.png', height: 24, width: 24),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(

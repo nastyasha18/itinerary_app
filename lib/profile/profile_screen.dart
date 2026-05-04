@@ -38,7 +38,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           PersonalCabinetScreen(onLogout: _goToLogin),
         ],
       ),
-      // ✅ УБРАНА BottomNavigationBar!
     );
   }
 }

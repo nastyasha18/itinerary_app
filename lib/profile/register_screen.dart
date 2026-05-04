@@ -34,7 +34,7 @@ class RegisterScreen extends StatelessWidget {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: onRegister, // ✅ Работает!
+                onPressed: onRegister,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.orange,
                   shape: RoundedRectangleBorder(
