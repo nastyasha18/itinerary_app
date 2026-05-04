@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import '../disign/colors.dart';
 
 class RouteFiltersSheet extends StatefulWidget {
-  final String? selectedAudience;
-  final String? selectedDuration;
-  final void Function(String? audience, String? duration) onApply;
+  final Set<String> selectedFilters;
+  final ValueChanged<String> onToggleFilter;
+  final VoidCallback onClearAll;
 
   const RouteFiltersSheet({
     super.key,
-    required this.selectedAudience,
-    required this.selectedDuration,
-    required this.onApply,
+    required this.selectedFilters,
+    required this.onToggleFilter,
+    required this.onClearAll,
   });
 
   @override
@@ -18,18 +18,12 @@ class RouteFiltersSheet extends StatefulWidget {
 }
 
 class _RouteFiltersSheetState extends State<RouteFiltersSheet> {
-  late String? tempAudience;
-  late String? tempDuration;
-
-  @override
-  void initState() {
-    super.initState();
-    tempAudience = widget.selectedAudience;
-    tempDuration = widget.selectedDuration;
-  }
-
   @override
   Widget build(BuildContext context) {
+    final audienceFilters = <String>['Студенты', 'Семейная', 'Турист'];
+
+    final durationFilters = <String>['30 минут', '~1.5 часа'];
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: const BoxDecoration(
@@ -53,12 +47,7 @@ class _RouteFiltersSheetState extends State<RouteFiltersSheet> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {
-                    setState(() {
-                      tempAudience = null;
-                      tempDuration = null;
-                    });
-                  },
+                  onPressed: widget.onClearAll,
                   child: const Text('Сбросить'),
                 ),
               ],
@@ -72,33 +61,17 @@ class _RouteFiltersSheetState extends State<RouteFiltersSheet> {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: [
-                  ChoiceChip(
-                    label: const Text('Все'),
-                    selected: tempAudience == null,
-                    onSelected: (_) => setState(() => tempAudience = null),
-                  ),
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: const Text('Студенты'),
-                    selected: tempAudience == 'Студенты',
-                    onSelected: (_) =>
-                        setState(() => tempAudience = 'Студенты'),
-                  ),
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: const Text('Семейная'),
-                    selected: tempAudience == 'Семейная',
-                    onSelected: (_) =>
-                        setState(() => tempAudience = 'Семейная'),
-                  ),
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: const Text('Турист'),
-                    selected: tempAudience == 'Турист',
-                    onSelected: (_) => setState(() => tempAudience = 'Турист'),
-                  ),
-                ],
+                children: audienceFilters.map((filter) {
+                  final selected = widget.selectedFilters.contains(filter);
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(filter),
+                      selected: selected,
+                      onSelected: (_) => widget.onToggleFilter(filter),
+                    ),
+                  );
+                }).toList(),
               ),
             ),
             const SizedBox(height: 20),
@@ -110,27 +83,17 @@ class _RouteFiltersSheetState extends State<RouteFiltersSheet> {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: [
-                  ChoiceChip(
-                    label: const Text('Все'),
-                    selected: tempDuration == null,
-                    onSelected: (_) => setState(() => tempDuration = null),
-                  ),
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: const Text('30 минут'),
-                    selected: tempDuration == '30 минут',
-                    onSelected: (_) =>
-                        setState(() => tempDuration = '30 минут'),
-                  ),
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: const Text('~1.5 часа'),
-                    selected: tempDuration == '~1.5 часа',
-                    onSelected: (_) =>
-                        setState(() => tempDuration = '~1.5 часа'),
-                  ),
-                ],
+                children: durationFilters.map((filter) {
+                  final selected = widget.selectedFilters.contains(filter);
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(filter),
+                      selected: selected,
+                      onSelected: (_) => widget.onToggleFilter(filter),
+                    ),
+                  );
+                }).toList(),
               ),
             ),
             const SizedBox(height: 24),
@@ -138,7 +101,7 @@ class _RouteFiltersSheetState extends State<RouteFiltersSheet> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  widget.onApply(tempAudience, tempDuration);
+                  Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.orange,

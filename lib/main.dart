@@ -43,8 +43,7 @@ class _MainScreenState extends State<MainScreen> {
 
   late final List<Map<String, dynamic>> routesList;
 
-  String? selectedAudience;
-  String? selectedDuration;
+  final Set<String> selectedFilters = {};
 
   @override
   void initState() {
@@ -91,14 +90,47 @@ class _MainScreenState extends State<MainScreen> {
 
   List<Map<String, dynamic>> get filteredRoutes {
     return routesList.where((route) {
+      if (selectedFilters.isEmpty) return true;
+
+      final audience = route['audience'] as String;
+      final duration = route['duration'] as String;
+
+      final audienceFilters = {'Студенты', 'Семейная', 'Турист'};
+      final durationFilters = {'30 минут', '~1.5 часа'};
+
+      final selectedAudienceFilters = selectedFilters.intersection(
+        audienceFilters,
+      );
+      final selectedDurationFilters = selectedFilters.intersection(
+        durationFilters,
+      );
+
       final audienceOk =
-          selectedAudience == null || route['audience'] == selectedAudience;
+          selectedAudienceFilters.isEmpty ||
+          selectedAudienceFilters.contains(audience);
 
       final durationOk =
-          selectedDuration == null || route['duration'] == selectedDuration;
+          selectedDurationFilters.isEmpty ||
+          selectedDurationFilters.contains(duration);
 
       return audienceOk && durationOk;
     }).toList();
+  }
+
+  void _toggleFilter(String filter) {
+    setState(() {
+      if (selectedFilters.contains(filter)) {
+        selectedFilters.remove(filter);
+      } else {
+        selectedFilters.add(filter);
+      }
+    });
+  }
+
+  void _clearAllFilters() {
+    setState(() {
+      selectedFilters.clear();
+    });
   }
 
   @override
@@ -138,15 +170,9 @@ class _MainScreenState extends State<MainScreen> {
                       backgroundColor: Colors.transparent,
                       builder: (context) {
                         return RouteFiltersSheet(
-                          selectedAudience: selectedAudience,
-                          selectedDuration: selectedDuration,
-                          onApply: (audience, duration) {
-                            setState(() {
-                              selectedAudience = audience;
-                              selectedDuration = duration;
-                            });
-                            Navigator.pop(context);
-                          },
+                          selectedFilters: selectedFilters,
+                          onToggleFilter: _toggleFilter,
+                          onClearAll: _clearAllFilters,
                         );
                       },
                     );
@@ -189,20 +215,9 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 ),
                 ActiveFiltersChips(
-                  selectedAudience: selectedAudience,
-                  selectedDuration: selectedDuration,
-                  onAudienceSelected: (value) {
-                    setState(() => selectedAudience = value);
-                  },
-                  onDurationSelected: (value) {
-                    setState(() => selectedDuration = value);
-                  },
-                  onClearAll: () {
-                    setState(() {
-                      selectedAudience = null;
-                      selectedDuration = null;
-                    });
-                  },
+                  selectedFilters: selectedFilters,
+                  onToggleFilter: _toggleFilter,
+                  onClearAll: _clearAllFilters,
                 ),
                 Expanded(
                   child: ListView.builder(
