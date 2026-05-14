@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'disign/colors.dart';
 import 'details_screen.dart';
 import 'search/route_search_delegate.dart';
@@ -6,8 +7,12 @@ import 'profile/profile_screen.dart';
 import 'menu/menu_screen.dart';
 import 'widgets/active_filters_chips.dart';
 import 'widgets/route_filters_sheet.dart';
+import 'services/auth_service.dart';
+import 'database/database_helper.dart';
 
-void main() {
+void main() async {                 
+  WidgetsFlutterBinding.ensureInitialized();
+  //await DatabaseHelper.startSqlInspector();
   runApp(const IniteraryApp());
 }
 
@@ -16,17 +21,20 @@ class IniteraryApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Initerary App',
-      theme: ThemeData(
-        scaffoldBackgroundColor: AppColors.lightGrey,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.navy,
-          elevation: 0,
+    return ChangeNotifierProvider(
+      create: (context) => AuthService(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Initerary App',
+        theme: ThemeData(
+          scaffoldBackgroundColor: AppColors.lightGrey,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: AppColors.navy,
+            elevation: 0,
+          ),
         ),
+        home: const MainScreen(),
       ),
-      home: const MainScreen(),
     );
   }
 }
