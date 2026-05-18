@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../disign/colors.dart';
 import 'register_screen.dart';
+import '../admin_panel/admin_panel_main.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback onLoginSuccess;
@@ -28,7 +29,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _validateFields() {
     setState(() {
-      // Валидация email
       final email = _emailController.text.trim();
       if (email.isEmpty) {
         _emailError = '';
@@ -38,7 +38,6 @@ class _LoginScreenState extends State<LoginScreen> {
         _emailError = '';
       }
 
-      // Валидация пароля
       final password = _passwordController.text;
       if (password.isEmpty) {
         _passwordError = '';
@@ -87,13 +86,27 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 32),
                 const Text(
                   'Вход в профиль',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.dark),
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.dark,
+                  ),
                 ),
                 const SizedBox(height: 48),
-                _buildTextField('Email', Icons.email_outlined, _emailController, errorText: _emailError),
+                _buildTextField(
+                  'Email',
+                  Icons.email_outlined,
+                  _emailController,
+                  errorText: _emailError,
+                ),
                 const SizedBox(height: 16),
-                _buildTextField('Пароль', Icons.lock_outline, _passwordController,
-                    obscureText: true, errorText: _passwordError),
+                _buildTextField(
+                  'Пароль',
+                  Icons.lock_outline,
+                  _passwordController,
+                  obscureText: true,
+                  errorText: _passwordError,
+                ),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
@@ -101,7 +114,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ElevatedButton(
                     onPressed: _isFormValid
                         ? () async {
-                            final auth = Provider.of<AuthService>(context, listen: false);
+                            final auth = Provider.of<AuthService>(
+                              context,
+                              listen: false,
+                            );
                             bool success = await auth.login(
                               _emailController.text.trim(),
                               _passwordController.text,
@@ -110,16 +126,60 @@ class _LoginScreenState extends State<LoginScreen> {
                               widget.onLoginSuccess();
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Неверный email или пароль')),
+                                const SnackBar(
+                                  content: Text('Неверный email или пароль'),
+                                ),
                               );
                             }
                           }
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.navy,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    child: const Text('Войти', style: TextStyle(fontSize: 18, color: Colors.white)),
+                    child: const Text(
+                      'Войти',
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AdminPanelMain(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.admin_panel_settings,
+                      color: AppColors.orange,
+                    ),
+                    label: const Text(
+                      'Войти как администратор',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.orange,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(
+                        color: AppColors.orange,
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      backgroundColor: Colors.white,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -128,7 +188,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => RegisterScreen(onRegisterSuccess: widget.onLoginSuccess),
+                        builder: (context) => RegisterScreen(
+                          onRegisterSuccess: widget.onLoginSuccess,
+                        ),
                       ),
                     );
                   },
@@ -139,7 +201,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextSpan(text: 'Нет аккаунта? '),
                         TextSpan(
                           text: 'Зарегистрируйтесь',
-                          style: TextStyle(color: AppColors.orange, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: AppColors.orange,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
@@ -153,8 +218,13 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildTextField(String label, IconData icon, TextEditingController controller,
-      {bool obscureText = false, String errorText = ''}) {
+  Widget _buildTextField(
+    String label,
+    IconData icon,
+    TextEditingController controller, {
+    bool obscureText = false,
+    String errorText = '',
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -162,7 +232,13 @@ class _LoginScreenState extends State<LoginScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 2))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: TextField(
             controller: controller,
@@ -170,9 +246,15 @@ class _LoginScreenState extends State<LoginScreen> {
             decoration: InputDecoration(
               labelText: label,
               prefixIcon: Icon(icon, color: AppColors.navy),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              errorText: null, // ошибку показываем отдельно
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
+              errorText: null,
             ),
           ),
         ),
