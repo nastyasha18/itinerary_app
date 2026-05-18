@@ -10,7 +10,7 @@ import 'widgets/route_filters_sheet.dart';
 import 'services/auth_service.dart';
 import 'database/database_helper.dart';
 
-void main() async {                 
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //await DatabaseHelper.startSqlInspector();
   runApp(const IniteraryApp());
