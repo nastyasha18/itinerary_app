@@ -48,79 +48,40 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentTabIndex = 0;
-
-  late final List<Map<String, dynamic>> routesList;
-
+  List<Map<String, dynamic>> _routes = [];
+  bool _isLoading = true;
   final Set<String> selectedFilters = {};
 
   @override
   void initState() {
     super.initState();
-    routesList = [
-      {
-        'title': 'Звезды Югры',
-        'price': '349₽',
-        'isPopular': true,
-        'seats': 15,
-        'audience': 'Турист',
-        'description': 'Экскурсия по местам силы Югры',
-        'duration': '30 минут',
-      },
-      {
-        'title': 'Звезды Югры',
-        'price': '349₽',
-        'isPopular': true,
-        'seats': 12,
-        'audience': 'Семейная',
-        'description': 'Экскурсия по местам силы Югры',
-        'duration': '~1.5 часа',
-      },
-      {
-        'title': 'Звезды Югры',
-        'price': '349₽',
-        'isPopular': true,
-        'seats': 20,
-        'audience': 'Студенты',
-        'description': 'Экскурсия по местам силы Югры',
-        'duration': '30 минут',
-      },
-      {
-        'title': 'Звезды Югры',
-        'price': '349₽',
-        'isPopular': true,
-        'seats': 20,
-        'audience': 'Студенты',
-        'description': 'Экскурсия по местам силы Югры',
-        'duration': '30 минут',
-      },
-    ];
+    _loadRoutes();
+  }
+
+  Future<void> _loadRoutes() async {
+    setState(() => _isLoading = true);
+    final db = DatabaseHelper();
+    final routes = await db.getAllRoutes();
+    setState(() {
+      _routes = routes;
+      _isLoading = false;
+    });
   }
 
   List<Map<String, dynamic>> get filteredRoutes {
-    return routesList.where((route) {
-      if (selectedFilters.isEmpty) return true;
-
-      final audience = route['audience'] as String;
-      final duration = route['duration'] as String;
+    if (selectedFilters.isEmpty) return _routes;
+    return _routes.where((route) {
+      final audience = route['audience'] as String? ?? '';
+      final duration = route['duration'] as String? ?? '';
 
       final audienceFilters = {'Студенты', 'Семейная', 'Турист'};
       final durationFilters = {'30 минут', '~1.5 часа'};
 
-      final selectedAudienceFilters = selectedFilters.intersection(
-        audienceFilters,
-      );
-      final selectedDurationFilters = selectedFilters.intersection(
-        durationFilters,
-      );
+      final selectedAudienceFilters = selectedFilters.intersection(audienceFilters);
+      final selectedDurationFilters = selectedFilters.intersection(durationFilters);
 
-      final audienceOk =
-          selectedAudienceFilters.isEmpty ||
-          selectedAudienceFilters.contains(audience);
-
-      final durationOk =
-          selectedDurationFilters.isEmpty ||
-          selectedDurationFilters.contains(duration);
-
+      final audienceOk = selectedAudienceFilters.isEmpty || selectedAudienceFilters.contains(audience);
+      final durationOk = selectedDurationFilters.isEmpty || selectedDurationFilters.contains(duration);
       return audienceOk && durationOk;
     }).toList();
   }
@@ -136,17 +97,19 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _clearAllFilters() {
-    setState(() {
-      selectedFilters.clear();
-    });
+    setState(() => selectedFilters.clear());
   }
 
   void _applyFilters(Set<String> newFilters) {
     setState(() {
-      selectedFilters
-        ..clear()
-        ..addAll(newFilters);
+      selectedFilters.clear();
+      selectedFilters.addAll(newFilters);
     });
+  }
+
+  // Вызывается после возврата из админ-панели, чтобы обновить список маршрутов
+  Future<void> _refreshRoutes() async {
+    await _loadRoutes();
   }
 
   @override
@@ -156,21 +119,12 @@ class _MainScreenState extends State<MainScreen> {
           ? AppBar(
               title: Row(
                 children: [
-                  Image.asset(
-                    'assets/icons/logo.png',
-                    height: 24,
-                    width: 24,
-                    fit: BoxFit.contain,
-                  ),
+                  Image.asset('assets/icons/logo.png', height: 24, width: 24, fit: BoxFit.contain),
                   const SizedBox(width: 8),
                   const Flexible(
                     child: Text(
                       'Маршруты первого нефтяного',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.lightGrey,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 12, color: AppColors.lightGrey, fontWeight: FontWeight.bold),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -184,26 +138,20 @@ class _MainScreenState extends State<MainScreen> {
                       context: context,
                       isScrollControlled: true,
                       backgroundColor: Colors.transparent,
-                      builder: (context) {
-                        return RouteFiltersSheet(
-                          selectedFilters: selectedFilters,
-                          onApply: _applyFilters,
-                          onClearAll: _clearAllFilters,
-                        );
-                      },
+                      builder: (context) => RouteFiltersSheet(
+                        selectedFilters: selectedFilters,
+                        onApply: _applyFilters,
+                        onClearAll: _clearAllFilters,
+                      ),
                     );
                   },
                 ),
                 IconButton(
-                  icon: Image.asset(
-                    'assets/icons/search.png',
-                    height: 24,
-                    width: 24,
-                  ),
+                  icon: Image.asset('assets/icons/search.png', height: 24, width: 24),
                   onPressed: () async {
                     final result = await showSearch<String?>(
                       context: context,
-                      delegate: RouteSearchDelegate(routesList),
+                      delegate: RouteSearchDelegate(_routes), // передаём актуальный список
                     );
                     if (result != null) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -216,103 +164,82 @@ class _MainScreenState extends State<MainScreen> {
             )
           : null,
       body: _currentTabIndex == 0
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    'Маршруты',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.dark,
+          ? _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        'Маршруты',
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.dark),
+                      ),
                     ),
-                  ),
-                ),
-                ActiveFiltersChips(
-                  selectedFilters: selectedFilters,
-                  onToggleFilter: _toggleFilter,
-                  onClearAll: _clearAllFilters,
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: filteredRoutes.length,
-                    itemBuilder: (context, index) {
-                      final route = filteredRoutes[index];
-                      return Column(
-                        children: [
-                          _buildRouteCard(context, route: route),
-                          if (index < filteredRoutes.length - 1)
-                            const SizedBox(height: 16),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-              ],
-            )
+                    ActiveFiltersChips(
+                      selectedFilters: selectedFilters,
+                      onToggleFilter: _toggleFilter,
+                      onClearAll: _clearAllFilters,
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: filteredRoutes.length,
+                        itemBuilder: (context, index) {
+                          final route = filteredRoutes[index];
+                          return Column(
+                            children: [
+                              _buildRouteCard(context, route: route),
+                              if (index < filteredRoutes.length - 1) const SizedBox(height: 16),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                )
           : _currentTabIndex == 1
-          ? const ProfileScreen()
-          : const MenuScreen(),
+              ? const ProfileScreen()
+              : const MenuScreen(),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: AppColors.dark,
         selectedItemColor: AppColors.blue,
         unselectedItemColor: AppColors.lightGrey,
         currentIndex: _currentTabIndex,
-        onTap: (index) {
+        onTap: (index) async {
+          if (index == 0) {
+            // если переключаемся на вкладку маршрутов, обновляем список (на случай изменений в админке)
+            await _refreshRoutes();
+          }
           setState(() {
             _currentTabIndex = index;
           });
         },
-        items: [
-          BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/icons/itinerary.png',
-              height: 24,
-              width: 24,
-            ),
-            label: 'Маршруты',
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/icons/profile.png',
-              height: 24,
-              width: 24,
-            ),
-            label: 'Мой профиль',
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset('assets/icons/menu.png', height: 24, width: 24),
-            label: 'Меню',
-          ),
+        items: const [
+          BottomNavigationBarItem(icon: ImageIcon(AssetImage('assets/icons/itinerary.png')), label: 'Маршруты'),
+          BottomNavigationBarItem(icon: ImageIcon(AssetImage('assets/icons/profile.png')), label: 'Мой профиль'),
+          BottomNavigationBarItem(icon: ImageIcon(AssetImage('assets/icons/menu.png')), label: 'Меню'),
         ],
       ),
     );
   }
 
-  Widget _buildRouteCard(
-    BuildContext context, {
-    required Map<String, dynamic> route,
-  }) {
+  Widget _buildRouteCard(BuildContext context, {required Map<String, dynamic> route}) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DetailsScreen()),
-        );
-      },
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => DetailsScreen(routeId: route['id']),
+    ),
+  );
+},
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5)),
           ],
         ),
         child: Column(
@@ -325,7 +252,7 @@ class _MainScreenState extends State<MainScreen> {
                 borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
               ),
               child: Image.network(
-                'https://oboi-ma.ru/f/product/1407_3.jpg',
+                route['imageUrl'] ?? 'https://oboi-ma.ru/f/product/1407_3.jpg',
                 fit: BoxFit.cover,
                 width: double.infinity,
               ),
@@ -338,31 +265,13 @@ class _MainScreenState extends State<MainScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          route['title'],
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        Text(route['title'] ?? '', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
-                        Text(
-                          route['price'],
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: AppColors.navy,
-                          ),
-                        ),
-                        if (route['isPopular'])
+                        Text(route['price'] ?? '', style: const TextStyle(fontSize: 16, color: AppColors.navy)),
+                        if (route['isPopular'] == 1)
                           const Padding(
                             padding: EdgeInsets.only(top: 4),
-                            child: Text(
-                              '#часто посещают',
-                              style: TextStyle(
-                                color: AppColors.orange,
-                                fontSize: 12,
-                              ),
-                            ),
+                            child: Text('#часто посещают', style: TextStyle(color: AppColors.orange, fontSize: 12)),
                           ),
                       ],
                     ),
@@ -373,23 +282,10 @@ class _MainScreenState extends State<MainScreen> {
                       onPressed: () => _showBookingBottomSheet(context, route),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.orange,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 8,
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                       ),
-                      child: const Text(
-                        'Купить',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
+                      child: const Text('Купить', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
                     ),
                   ),
                 ],
@@ -401,10 +297,7 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  void _showBookingBottomSheet(
-    BuildContext context,
-    Map<String, dynamic> route,
-  ) {
+  void _showBookingBottomSheet(BuildContext context, Map<String, dynamic> route) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -412,10 +305,7 @@ class _MainScreenState extends State<MainScreen> {
       builder: (BuildContext context) {
         return Container(
           height: MediaQuery.of(context).size.height * 0.75,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-          ),
+          decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
@@ -424,40 +314,22 @@ class _MainScreenState extends State<MainScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      route['title'],
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, size: 28),
-                    ),
+                    Text(route['title'] ?? '', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                    IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, size: 28)),
                   ],
                 ),
                 const SizedBox(height: 20),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.lightGrey.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  decoration: BoxDecoration(color: AppColors.lightGrey.withOpacity(0.3), borderRadius: BorderRadius.circular(12)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Мест доступно: ${route['seats']}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text('Аудитория: ${route['audience']}'),
-                      Text('Длительность: ${route['duration']}'),
-                      Text('Стоимость: ${route['price']}'),
+                      Text('Мест доступно: ${route['seats'] ?? 10}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text('Аудитория: ${route['audience'] ?? ''}'),
+                      Text('Длительность: ${route['duration'] ?? ''}'),
+                      Text('Стоимость: ${route['price'] ?? ''}'),
                     ],
                   ),
                 ),
@@ -468,29 +340,15 @@ class _MainScreenState extends State<MainScreen> {
                     onPressed: () {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Бронь ${route['title']} оформлена! 💳',
-                          ),
-                          backgroundColor: AppColors.orange,
-                        ),
+                        SnackBar(content: Text('Бронь ${route['title']} оформлена! 💳'), backgroundColor: AppColors.orange),
                       );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.orange,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                     ),
-                    child: Text(
-                      'Оформить бронь ${route['price']}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
+                    child: Text('Оформить бронь ${route['price']}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                 ),
               ],

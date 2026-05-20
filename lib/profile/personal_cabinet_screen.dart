@@ -15,20 +15,11 @@ class PersonalCabinetScreen extends StatefulWidget {
 
 class _PersonalCabinetScreenState extends State<PersonalCabinetScreen> {
   final List<Map<String, dynamic>> _purchases = [
-    {'title': 'Звезды Югры', 'price': '349₽', 'active': false},
-    {'title': 'Маршрут по Ханты-Мансийску', 'price': '499₽', 'active': true},
-    {'title': 'Тур по Сургуту', 'price': '599₽', 'active': false},
-  ];
+  {'id': 1, 'title': 'Звезды Югры', 'price': '349₽', 'active': false},
+  {'id': 2, 'title': 'Маршрут по Ханты-Мансийску', 'price': '499₽', 'active': true},
+  {'id': 3, 'title': 'Тур по Сургуту', 'price': '599₽', 'active': false},
+];
 
-  void _handleReviewSubmitted(
-    int rating,
-    String comment,
-    List<String> selectedOptions,
-  ) {
-    debugPrint('Rating: $rating');
-    debugPrint('Comment: $comment');
-    debugPrint('Selected: $selectedOptions');
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,32 +88,45 @@ class _PersonalCabinetScreenState extends State<PersonalCabinetScreen> {
                           purchase['active'] as bool,
                         ),
                         if (!(purchase['active'] as bool))
-                          Positioned(
-                            right: 8,
-                            bottom: 8,
-                            child: GestureDetector(
-                              onTap: () => showReviewBottomSheet(
-                                context,
-                                routeName: purchase['title'] as String,
-                                onReviewSubmitted: _handleReviewSubmitted,
-                              ),
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: AppColors.orange,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.orange.withOpacity(0.4),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(Icons.rate_review_rounded, color: Colors.white, size: 24),
-                              ),
-                            ),
-                          ),
+  Positioned(
+    right: 8,
+    bottom: 8,
+    child: GestureDetector(
+      onTap: () {
+        final auth = Provider.of<AuthService>(context, listen: false);
+        final currentUser = auth.currentUser;
+        if (currentUser?.id != null) {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            builder: (context) => ReviewBottomSheet(
+              routeId: purchase['id'] as int,
+              userId: currentUser!.id!,
+              routeName: purchase['title'] as String,
+            ),
+          );
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: AppColors.orange,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.orange.withOpacity(0.4),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: const Icon(Icons.rate_review_rounded, color: Colors.white, size: 24),
+      ),
+    ),
+  ),
                       ],
                     );
                   },

@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import '../disign/colors.dart';
-
-typedef OnReviewSubmitted =
-    void Function(int rating, String comment, List<String> selectedOptions);
+import '../database/database_helper.dart';
+import '../models/review.dart';
 
 class ReviewBottomSheet extends StatefulWidget {
+  final int routeId;
+  final int userId;
   final String routeName;
-  final OnReviewSubmitted? onReviewSubmitted;
 
   const ReviewBottomSheet({
     super.key,
+    required this.routeId,
+    required this.userId,
     required this.routeName,
-    this.onReviewSubmitted,
   });
 
   @override
@@ -36,7 +37,13 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
     super.dispose();
   }
 
-  void _submitReview() {
+  void _toggleChip(int index) {
+    setState(() {
+      _checkedStates[index] = !_checkedStates[index];
+    });
+  }
+
+  Future<void> _submitReview() async {
     final selectedOptions = _checkOptions
         .asMap()
         .entries
@@ -44,23 +51,25 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
         .map((entry) => entry.value)
         .toList();
 
-    widget.onReviewSubmitted?.call(
-      _selectedRating,
-      _commentController.text.trim(),
-      selectedOptions,
+    final review = Review(
+      userId: widget.userId,
+      routeId: widget.routeId,
+      rating: _selectedRating,
+      comment: _commentController.text.trim(),
+      quickOptions: selectedOptions,
+      createdAt: DateTime.now(),
+      adminReply: null,
     );
 
-    Navigator.pop(context);
+    final db = DatabaseHelper();
+    await db.insertReview(review);
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Спасибо за ваш отзыв!')));
-  }
-
-  void _toggleChip(int index) {
-    setState(() {
-      _checkedStates[index] = !_checkedStates[index];
-    });
+    if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Спасибо за ваш отзыв!')),
+      );
+    }
   }
 
   @override
@@ -106,22 +115,15 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
                     onTap: () => setState(() => _selectedRating = number),
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 2),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       decoration: BoxDecoration(
-                        color: number <= _selectedRating
-                            ? AppColors.orange
-                            : AppColors.whiteGrey,
+                        color: number <= _selectedRating ? AppColors.orange : AppColors.whiteGrey,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         '$number',
                         style: TextStyle(
-                          color: number <= _selectedRating
-                              ? Colors.white
-                              : Colors.black87,
+                          color: number <= _selectedRating ? Colors.white : Colors.black87,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
@@ -138,9 +140,7 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
               controller: _commentController,
               maxLines: 3,
               decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 hintText: 'Напишите ваш отзыв...',
               ),
             ),
@@ -156,9 +156,7 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
                     _checkOptions[index],
                     style: TextStyle(
                       fontSize: 13,
-                      color: _checkedStates[index]
-                          ? Colors.white
-                          : Colors.black87,
+                      color: _checkedStates[index] ? Colors.white : Colors.black87,
                     ),
                   ),
                   selected: _checkedStates[index],
@@ -166,9 +164,7 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
                   selectedColor: AppColors.orange,
                   checkmarkColor: Colors.white,
                   backgroundColor: AppColors.whiteGrey,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 );
               }),
             ),
@@ -180,9 +176,7 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
                 onPressed: _submitReview,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.navy,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: const Text(
                   'Отправить отзыв',
@@ -196,22 +190,4 @@ class _ReviewBottomSheetState extends State<ReviewBottomSheet> {
       ),
     );
   }
-}
-
-void showReviewBottomSheet(
-  BuildContext context, {
-  required String routeName,
-  OnReviewSubmitted? onReviewSubmitted,
-}) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (context) => ReviewBottomSheet(
-      routeName: routeName,
-      onReviewSubmitted: onReviewSubmitted,
-    ),
-  );
 }

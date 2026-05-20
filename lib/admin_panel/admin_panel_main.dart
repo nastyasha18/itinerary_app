@@ -16,13 +16,25 @@ class AdminPanelMain extends StatefulWidget {
 class _AdminPanelMainState extends State<AdminPanelMain> {
   int _index = 0;
 
-  final _screens = const [
-    AdminDashboardScreen(),
-    RoutesScreen(),
-    AboutMuseumScreen(),
-    VisitorsScreen(),
-    FeedbackScreen(),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      AdminDashboardScreen(onNavigate: _setIndex),
+      RoutesScreen(),
+      const AboutMuseumScreen(),
+      const VisitorsScreen(),
+      FeedbackScreen(),
+    ];
+  }
+
+  void _setIndex(int index) {
+    setState(() {
+      _index = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
