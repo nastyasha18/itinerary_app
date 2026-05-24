@@ -151,16 +151,28 @@ class _RoutesScreenState extends State<RoutesScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text('Удалить маршрут?', style: TextStyle(color: AppColors.dark, fontWeight: FontWeight.bold)),
-        content: const Text('Это действие нельзя будет отменить.', style: TextStyle(color: AppColors.navy)),
+        title: const Text(
+          'Удалить маршрут?',
+          style: TextStyle(color: AppColors.dark, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Это действие нельзя будет отменить.',
+          style: TextStyle(color: AppColors.navy),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Отмена', style: TextStyle(color: AppColors.navy)),
+            child: const Text(
+              'Отмена',
+              style: TextStyle(color: AppColors.navy),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Удалить'),
           ),
         ],
@@ -183,7 +195,11 @@ class _RoutesScreenState extends State<RoutesScreen> {
       children: [
         const Text(
           'Маршруты',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.dark),
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: AppColors.dark,
+          ),
         ),
         const SizedBox(height: 12),
         TextField(
@@ -192,7 +208,10 @@ class _RoutesScreenState extends State<RoutesScreen> {
             prefixIcon: const Icon(Icons.search),
             filled: true,
             fillColor: Colors.white,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
           ),
           onChanged: (value) {
             // TODO: фильтрация (можно добавить позже)
@@ -210,7 +229,13 @@ class _RoutesScreenState extends State<RoutesScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(18),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 3))],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -221,24 +246,52 @@ class _RoutesScreenState extends State<RoutesScreen> {
                       color: AppColors.orange.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Icon(Icons.route, color: AppColors.orange, size: 30),
+                    child: const Icon(
+                      Icons.route,
+                      color: AppColors.orange,
+                      size: 30,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(route['title'] ?? '', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.dark)),
+                        Text(
+                          route['title'] ?? '',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.dark,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text(route['description'] ?? '', maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.navy, fontSize: 13)),
+                        Text(
+                          route['description'] ?? '',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.navy,
+                            fontSize: 13,
+                          ),
+                        ),
                         const SizedBox(height: 6),
-                        Text(route['price'] ?? '', style: const TextStyle(color: AppColors.orange, fontWeight: FontWeight.bold)),
+                        Text(
+                          route['price'] ?? '',
+                          style: const TextStyle(
+                            color: AppColors.orange,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   IconButton(
                     onPressed: () => _deleteRoute(id),
-                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      color: AppColors.orange,
+                    ),
                   ),
                   const Icon(Icons.chevron_right, color: AppColors.navy),
                 ],
@@ -257,7 +310,9 @@ class _RoutesScreenState extends State<RoutesScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.orange,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
           ),
         ),

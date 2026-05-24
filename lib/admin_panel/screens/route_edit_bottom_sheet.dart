@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../disign/colors.dart';
 
 class RouteEditBottomSheet extends StatefulWidget {
-  final int initialId;              // добавлено
+  final int initialId; // добавлено
   final String initialTitle;
   final String initialPrice;
   final String initialDescription;
@@ -11,7 +11,7 @@ class RouteEditBottomSheet extends StatefulWidget {
 
   const RouteEditBottomSheet({
     super.key,
-    required this.initialId,       // добавлено
+    required this.initialId, // добавлено
     required this.initialTitle,
     required this.initialPrice,
     required this.initialDescription,
@@ -220,7 +220,7 @@ class _RouteEditBottomSheetState extends State<RouteEditBottomSheet> {
                               ),
                               child: const Icon(
                                 Icons.delete_outline,
-                                color: Colors.redAccent,
+                                color: AppColors.orange,
                               ),
                             ),
                           ),

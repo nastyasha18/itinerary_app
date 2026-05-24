@@ -49,10 +49,14 @@ class _AdminPanelMainState extends State<AdminPanelMain> {
       body: _screens[_index],
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(
-          backgroundColor: Colors.white,
-          indicatorColor: AppColors.orange.withOpacity(0.16),
+          backgroundColor: AppColors.dark,
+          indicatorColor: AppColors.blue.withOpacity(0.16),
           labelTextStyle: WidgetStateProperty.all(
-            const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.lightGrey,
+            ),
           ),
         ),
         child: NavigationBar(
@@ -60,28 +64,29 @@ class _AdminPanelMainState extends State<AdminPanelMain> {
           onDestinationSelected: (value) => setState(() => _index = value),
           destinations: const [
             NavigationDestination(
-              icon: Icon(Icons.dashboard_outlined),
-              selectedIcon: Icon(Icons.dashboard),
+              icon: ImageIcon(
+                AssetImage('assets/icons/dashboard.png'),
+                color: AppColors.blue,
+              ),
               label: 'Дашборд',
             ),
             NavigationDestination(
-              icon: Icon(Icons.route_outlined),
-              selectedIcon: Icon(Icons.route),
+              icon: ImageIcon(
+                AssetImage('assets/icons/itinerary.png'),
+                color: AppColors.blue,
+              ),
               label: 'Маршруты',
             ),
             NavigationDestination(
-              icon: Icon(Icons.museum_outlined),
-              selectedIcon: Icon(Icons.museum),
+              icon: Icon(Icons.museum_outlined, color: AppColors.blue),
               label: 'О музее',
             ),
             NavigationDestination(
-              icon: Icon(Icons.groups_outlined),
-              selectedIcon: Icon(Icons.groups),
+              icon: Icon(Icons.groups_outlined, color: AppColors.blue),
               label: 'Посетители',
             ),
             NavigationDestination(
-              icon: Icon(Icons.rate_review_outlined),
-              selectedIcon: Icon(Icons.rate_review),
+              icon: Icon(Icons.rate_review_outlined, color: AppColors.blue),
               label: 'Отзывы',
             ),
           ],

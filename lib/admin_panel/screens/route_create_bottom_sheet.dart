@@ -60,7 +60,7 @@ class _RouteCreateBottomSheetState extends State<RouteCreateBottomSheet> {
           ? 'Описание маршрута'
           : _descriptionController.text.trim(),
       'price': _priceController.text.trim().isEmpty
-          ? '349 ₽'
+          ? ' ₽'
           : _priceController.text.trim(),
       'duration': _durationController.text.trim(),
       'audience': _audienceController.text.trim(),
@@ -118,7 +118,9 @@ class _RouteCreateBottomSheetState extends State<RouteCreateBottomSheet> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _sectionTitle('Как будет выглядеть маршрут при прохождении'),
+                  _sectionTitle(
+                    'Как будет выглядеть маршрут на главном экране',
+                  ),
                   const SizedBox(height: 12),
                   _placeholderImageBlock(),
                   const SizedBox(height: 12),
