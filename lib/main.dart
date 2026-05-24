@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'disign/colors.dart';
 import 'details_screen.dart';
 import 'search/route_search_delegate.dart';
@@ -6,8 +7,12 @@ import 'profile/profile_screen.dart';
 import 'menu/menu_screen.dart';
 import 'widgets/active_filters_chips.dart';
 import 'widgets/route_filters_sheet.dart';
+import 'services/auth_service.dart';
+import 'database/database_helper.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  //await DatabaseHelper.startSqlInspector();
   runApp(const IniteraryApp());
 }
 
@@ -16,17 +21,20 @@ class IniteraryApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Initerary App',
-      theme: ThemeData(
-        scaffoldBackgroundColor: AppColors.lightGrey,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.navy,
-          elevation: 0,
+    return ChangeNotifierProvider(
+      create: (context) => AuthService(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Initerary App',
+        theme: ThemeData(
+          scaffoldBackgroundColor: AppColors.lightGrey,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: AppColors.navy,
+            elevation: 0,
+          ),
         ),
+        home: const MainScreen(),
       ),
-      home: const MainScreen(),
     );
   }
 }
@@ -40,60 +48,31 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentTabIndex = 0;
-
-  late final List<Map<String, dynamic>> routesList;
-
+  List<Map<String, dynamic>> _routes = [];
+  bool _isLoading = true;
   final Set<String> selectedFilters = {};
 
   @override
   void initState() {
     super.initState();
-    routesList = [
-      {
-        'title': 'Звезды Югры',
-        'price': '349₽',
-        'isPopular': true,
-        'seats': 15,
-        'audience': 'Турист',
-        'description': 'Экскурсия по местам силы Югры',
-        'duration': '30 минут',
-      },
-      {
-        'title': 'Звезды Югры',
-        'price': '349₽',
-        'isPopular': true,
-        'seats': 12,
-        'audience': 'Семейная',
-        'description': 'Экскурсия по местам силы Югры',
-        'duration': '~1.5 часа',
-      },
-      {
-        'title': 'Звезды Югры',
-        'price': '349₽',
-        'isPopular': true,
-        'seats': 20,
-        'audience': 'Студенты',
-        'description': 'Экскурсия по местам силы Югры',
-        'duration': '30 минут',
-      },
-      {
-        'title': 'Звезды Югры',
-        'price': '349₽',
-        'isPopular': true,
-        'seats': 20,
-        'audience': 'Студенты',
-        'description': 'Экскурсия по местам силы Югры',
-        'duration': '30 минут',
-      },
-    ];
+    _loadRoutes();
+  }
+
+  Future<void> _loadRoutes() async {
+    setState(() => _isLoading = true);
+    final db = DatabaseHelper();
+    final routes = await db.getAllRoutes();
+    setState(() {
+      _routes = routes;
+      _isLoading = false;
+    });
   }
 
   List<Map<String, dynamic>> get filteredRoutes {
-    return routesList.where((route) {
-      if (selectedFilters.isEmpty) return true;
-
-      final audience = route['audience'] as String;
-      final duration = route['duration'] as String;
+    if (selectedFilters.isEmpty) return _routes;
+    return _routes.where((route) {
+      final audience = route['audience'] as String? ?? '';
+      final duration = route['duration'] as String? ?? '';
 
       final audienceFilters = {'Студенты', 'Семейная', 'Турист'};
       final durationFilters = {'30 минут', '~1.5 часа'};
@@ -108,11 +87,9 @@ class _MainScreenState extends State<MainScreen> {
       final audienceOk =
           selectedAudienceFilters.isEmpty ||
           selectedAudienceFilters.contains(audience);
-
       final durationOk =
           selectedDurationFilters.isEmpty ||
           selectedDurationFilters.contains(duration);
-
       return audienceOk && durationOk;
     }).toList();
   }
@@ -128,17 +105,19 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _clearAllFilters() {
-    setState(() {
-      selectedFilters.clear();
-    });
+    setState(() => selectedFilters.clear());
   }
 
   void _applyFilters(Set<String> newFilters) {
     setState(() {
-      selectedFilters
-        ..clear()
-        ..addAll(newFilters);
+      selectedFilters.clear();
+      selectedFilters.addAll(newFilters);
     });
+  }
+
+  // Вызывается после возврата из админ-панели, чтобы обновить список маршрутов
+  Future<void> _refreshRoutes() async {
+    await _loadRoutes();
   }
 
   @override
@@ -176,13 +155,11 @@ class _MainScreenState extends State<MainScreen> {
                       context: context,
                       isScrollControlled: true,
                       backgroundColor: Colors.transparent,
-                      builder: (context) {
-                        return RouteFiltersSheet(
-                          selectedFilters: selectedFilters,
-                          onApply: _applyFilters,
-                          onClearAll: _clearAllFilters,
-                        );
-                      },
+                      builder: (context) => RouteFiltersSheet(
+                        selectedFilters: selectedFilters,
+                        onApply: _applyFilters,
+                        onClearAll: _clearAllFilters,
+                      ),
                     );
                   },
                 ),
@@ -195,7 +172,9 @@ class _MainScreenState extends State<MainScreen> {
                   onPressed: () async {
                     final result = await showSearch<String?>(
                       context: context,
-                      delegate: RouteSearchDelegate(routesList),
+                      delegate: RouteSearchDelegate(
+                        _routes,
+                      ), // передаём актуальный список
                     );
                     if (result != null) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -208,43 +187,45 @@ class _MainScreenState extends State<MainScreen> {
             )
           : null,
       body: _currentTabIndex == 0
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    'Маршруты',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.dark,
-                    ),
-                  ),
-                ),
-                ActiveFiltersChips(
-                  selectedFilters: selectedFilters,
-                  onToggleFilter: _toggleFilter,
-                  onClearAll: _clearAllFilters,
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: filteredRoutes.length,
-                    itemBuilder: (context, index) {
-                      final route = filteredRoutes[index];
-                      return Column(
-                        children: [
-                          _buildRouteCard(context, route: route),
-                          if (index < filteredRoutes.length - 1)
-                            const SizedBox(height: 16),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-              ],
-            )
+          ? _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text(
+                          'Маршруты',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.dark,
+                          ),
+                        ),
+                      ),
+                      ActiveFiltersChips(
+                        selectedFilters: selectedFilters,
+                        onToggleFilter: _toggleFilter,
+                        onClearAll: _clearAllFilters,
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: filteredRoutes.length,
+                          itemBuilder: (context, index) {
+                            final route = filteredRoutes[index];
+                            return Column(
+                              children: [
+                                _buildRouteCard(context, route: route),
+                                if (index < filteredRoutes.length - 1)
+                                  const SizedBox(height: 16),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  )
           : _currentTabIndex == 1
           ? const ProfileScreen()
           : const MenuScreen(),
@@ -253,30 +234,26 @@ class _MainScreenState extends State<MainScreen> {
         selectedItemColor: AppColors.blue,
         unselectedItemColor: AppColors.lightGrey,
         currentIndex: _currentTabIndex,
-        onTap: (index) {
+        onTap: (index) async {
+          if (index == 0) {
+            // если переключаемся на вкладку маршрутов, обновляем список (на случай изменений в админке)
+            await _refreshRoutes();
+          }
           setState(() {
             _currentTabIndex = index;
           });
         },
-        items: [
+        items: const [
           BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/icons/itinerary.png',
-              height: 24,
-              width: 24,
-            ),
+            icon: ImageIcon(AssetImage('assets/icons/itinerary.png')),
             label: 'Маршруты',
           ),
           BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/icons/profile.png',
-              height: 24,
-              width: 24,
-            ),
+            icon: ImageIcon(AssetImage('assets/icons/profile.png')),
             label: 'Мой профиль',
           ),
           BottomNavigationBarItem(
-            icon: Image.asset('assets/icons/menu.png', height: 24, width: 24),
+            icon: ImageIcon(AssetImage('assets/icons/menu.png')),
             label: 'Меню',
           ),
         ],
@@ -292,7 +269,9 @@ class _MainScreenState extends State<MainScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => DetailsScreen()),
+          MaterialPageRoute(
+            builder: (context) => DetailsScreen(routeId: route['id']),
+          ),
         );
       },
       child: Container(
@@ -317,7 +296,7 @@ class _MainScreenState extends State<MainScreen> {
                 borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
               ),
               child: Image.network(
-                'https://oboi-ma.ru/f/product/1407_3.jpg',
+                route['imageUrl'] ?? 'https://oboi-ma.ru/f/product/1407_3.jpg',
                 fit: BoxFit.cover,
                 width: double.infinity,
               ),
@@ -331,7 +310,7 @@ class _MainScreenState extends State<MainScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          route['title'],
+                          route['title'] ?? '',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -339,13 +318,13 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          route['price'],
+                          route['price'] ?? '',
                           style: const TextStyle(
                             fontSize: 16,
                             color: AppColors.navy,
                           ),
                         ),
-                        if (route['isPopular'])
+                        if (route['isPopular'] == 1)
                           const Padding(
                             padding: EdgeInsets.only(top: 4),
                             child: Text(
@@ -417,7 +396,7 @@ class _MainScreenState extends State<MainScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      route['title'],
+                      route['title'] ?? '',
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -441,15 +420,15 @@ class _MainScreenState extends State<MainScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Мест доступно: ${route['seats']}',
+                        'Мест доступно: ${route['seats'] ?? 10}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text('Аудитория: ${route['audience']}'),
-                      Text('Длительность: ${route['duration']}'),
-                      Text('Стоимость: ${route['price']}'),
+                      Text('Аудитория: ${route['audience'] ?? ''}'),
+                      Text('Длительность: ${route['duration'] ?? ''}'),
+                      Text('Стоимость: ${route['price'] ?? ''}'),
                     ],
                   ),
                 ),

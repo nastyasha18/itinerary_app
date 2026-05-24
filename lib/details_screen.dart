@@ -1,23 +1,54 @@
 import 'package:flutter/material.dart';
-import 'dart:ui'; // Для эффекта размытия (BackdropFilter)
-import 'disign/colors.dart';
+import 'dart:ui';
+import 'package:itinerary_app/disign/colors.dart';
+import 'package:itinerary_app/database/database_helper.dart';
 
-class DetailsScreen extends StatelessWidget {
-  final List<Map<String, String>> exhibits = [
-    {
-      'name': 'Экспонат 1',
-      'image':
-          'https://i.pinimg.com/1200x/70/83/62/7083628471bd31dbd826d6640d8b2429.jpg',
-    },
-    {
-      'name': 'Экспонат 2 ',
-      'image':
-          'https://i.pinimg.com/1200x/43/4d/57/434d578b2acd85cb44d311ebe181beab.jpg',
-    },
-  ];
+class DetailsScreen extends StatefulWidget {
+  final int routeId;
+  const DetailsScreen({super.key, required this.routeId});
+
+  @override
+  State<DetailsScreen> createState() => _DetailsScreenState();
+}
+
+class _DetailsScreenState extends State<DetailsScreen> {
+  Map<String, dynamic>? _route;
+  List<Map<String, dynamic>> _points = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final db = DatabaseHelper();
+    final route = await db.getRouteById(widget.routeId);
+    final points = await db.getRoutePoints(widget.routeId);
+    setState(() {
+      _route = route;
+      _points = points;
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: AppColors.whiteGrey,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_route == null) {
+      return Scaffold(
+        backgroundColor: AppColors.whiteGrey,
+        body: const Center(child: Text('Маршрут не найден')),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.whiteGrey,
       body: Column(
@@ -30,9 +61,7 @@ class DetailsScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.navy,
                   image: DecorationImage(
-                    image: NetworkImage(
-                      'https://oboi-ma.ru/f/product/1407_3.jpg',
-                    ),
+                    image: NetworkImage(_route!['imageUrl'] ?? 'https://oboi-ma.ru/f/product/1407_3.jpg'),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -43,11 +72,7 @@ class DetailsScreen extends StatelessWidget {
                 child: CircleAvatar(
                   backgroundColor: AppColors.whiteGrey,
                   child: IconButton(
-                    icon: Image.asset(
-                      'assets/icons/back.png', // Ваша иконка "назад"
-                      height: 24,
-                      width: 24,
-                    ),
+                    icon: Image.asset('assets/icons/back.png', height: 24, width: 24),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -56,53 +81,44 @@ class DetailsScreen extends StatelessWidget {
           ),
           Expanded(
             child: Container(
-              padding: EdgeInsets.all(20),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: AppColors.lightGrey,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
               ),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Звёзды Югры',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.dark,
-                      ),
+                      _route!['title'] ?? '',
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.dark),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
                         Icon(Icons.access_time, color: AppColors.blue),
-                        SizedBox(width: 5),
-                        Text(
-                          '70 минут',
-                          style: TextStyle(color: AppColors.navy),
-                        ),
+                        const SizedBox(width: 5),
+                        Text(_route!['duration'] ?? '', style: const TextStyle(color: AppColors.navy)),
                       ],
                     ),
                     Divider(height: 30, color: AppColors.lightGrey),
                     Text(
-                      'Мемориальные предметы, документы и фотографии выдающихся людей.',
-                      style: TextStyle(fontSize: 16, color: AppColors.dark),
+                      _route!['description'] ?? '',
+                      style: const TextStyle(fontSize: 16, color: AppColors.dark),
                     ),
-                    Divider(height: 30),
-                    Text(
+                    const Divider(height: 30),
+                    const Text(
                       'В этой экскурсии:',
-                      style: TextStyle(
-                        fontSize: 18,
-                        //fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 18),
                     ),
-                    SizedBox(height: 15),
-                    ...exhibits.asMap().entries.map((entry) {
+                    const SizedBox(height: 15),
+                    ..._points.asMap().entries.map((entry) {
+                      final point = entry.value;
                       return ExhibitTimelineItem(
-                        imageUrl: entry.value['image']!,
-                        title: entry.value['name']!,
-                        isLast: entry.key == exhibits.length - 1,
+                        imageUrl: 'https://i.pinimg.com/1200x/70/83/62/7083628471bd31dbd826d6640d8b2429.jpg', // заглушка
+                        title: point['name'] ?? '',
+                        isLast: entry.key == _points.length - 1,
                       );
                     }).toList(),
                   ],
@@ -122,6 +138,7 @@ class ExhibitTimelineItem extends StatelessWidget {
   final bool isLast;
 
   const ExhibitTimelineItem({
+    super.key,
     required this.imageUrl,
     required this.title,
     required this.isLast,
@@ -136,7 +153,6 @@ class ExhibitTimelineItem extends StatelessWidget {
           children: [
             GestureDetector(
               onTap: () => _openFullImage(context, imageUrl),
-              // Кружочек с оранжевым контуром
               child: Container(
                 width: 55,
                 height: 55,
@@ -144,7 +160,7 @@ class ExhibitTimelineItem extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(color: AppColors.orange, width: 3),
                 ),
-                padding: EdgeInsets.all(3),
+                padding: const EdgeInsets.all(3),
                 child: CircleAvatar(backgroundImage: NetworkImage(imageUrl)),
               ),
             ),
@@ -153,18 +169,15 @@ class ExhibitTimelineItem extends StatelessWidget {
                 width: 2,
                 height: 40,
                 color: AppColors.orange,
-                margin: EdgeInsets.symmetric(vertical: 5),
+                margin: const EdgeInsets.symmetric(vertical: 5),
               ),
           ],
         ),
-        SizedBox(width: 15),
+        const SizedBox(width: 15),
         Expanded(
           child: Padding(
-            padding: EdgeInsets.only(top: 15),
-            child: Text(
-              title,
-              style: TextStyle(fontSize: 16, color: AppColors.dark),
-            ),
+            padding: const EdgeInsets.only(top: 15),
+            child: Text(title, style: const TextStyle(fontSize: 16, color: AppColors.dark)),
           ),
         ),
       ],
@@ -175,19 +188,16 @@ class ExhibitTimelineItem extends StatelessWidget {
     Navigator.push(
       context,
       PageRouteBuilder(
-        opaque: false, // Прозрачность экрана
+        opaque: false,
         pageBuilder: (_, __, ___) => Scaffold(
           backgroundColor: Colors.transparent,
           body: Stack(
             children: [
-              // Размытый фон
               BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Container(color: Colors.black.withOpacity(0.4)),
               ),
-              // Само фото
               Center(child: InteractiveViewer(child: Image.network(url))),
-              // Кнопка закрытия
               Positioned(
                 top: 50,
                 right: 20,

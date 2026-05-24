@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../services/auth_service.dart';
 import '../disign/colors.dart';
-import './review_bottom_sheet.dart';
+import 'review_bottom_sheet.dart';
+import 'purchased_route_screen.dart';
 
 class PersonalCabinetScreen extends StatefulWidget {
   final VoidCallback? onLogout;
+
   const PersonalCabinetScreen({super.key, this.onLogout});
 
   @override
@@ -12,98 +16,166 @@ class PersonalCabinetScreen extends StatefulWidget {
 
 class _PersonalCabinetScreenState extends State<PersonalCabinetScreen> {
   final List<Map<String, dynamic>> _purchases = [
-    {'title': 'Звезды Югры', 'price': '349₽', 'active': false},
-    {'title': 'Маршрут по Ханты-Мансийску', 'price': '499₽', 'active': true},
-    {'title': 'Тур по Сургуту', 'price': '599₽', 'active': false},
+    {'id': 1, 'title': 'Звезды Югры', 'price': '349₽', 'completed': false},
+    {
+      'id': 2,
+      'title': 'Маршрут по Ханты-Мансийску',
+      'price': '499₽',
+      'completed': true,
+    },
+    {'id': 3, 'title': 'Тур по Сургуту', 'price': '599₽', 'completed': false},
   ];
 
-  void _handleReviewSubmitted(
-    int rating,
-    String comment,
-    List<String> selectedOptions,
-  ) {
-    debugPrint('Rating: $rating');
-    debugPrint('Comment: $comment');
-    debugPrint('Selected: $selectedOptions');
+  List<RouteStep> _demoStepsFor(String title) {
+    return [
+      RouteStep(
+        type: 'guide',
+        title: '$title ',
+        description: 'Идите прямо к первому залу и поверните направо.',
+        imageUrl: 'https://oboi-ma.ru/f/product/1407_3.jpg',
+      ),
+      RouteStep(
+        type: 'exhibit',
+        title: '$title',
+        description:
+            'Здесь отображается подробная информация об экспонате маршрута.',
+        imageUrl:
+            'https://i.pinimg.com/1200x/70/83/62/7083628471bd31dbd826d6640d8b2429.jpg',
+      ),
+      RouteStep(
+        type: 'guide',
+        title: '$title ',
+        description: 'Продолжайте движение к следующей точке маршрута.',
+        imageUrl: 'https://oboi-ma.ru/f/product/1407_3.jpg',
+      ),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  height: 72,
-                  width: 72,
-                  decoration: BoxDecoration(
-                    color: AppColors.navy,
-                    shape: BoxShape.circle,
+    final auth = Provider.of<AuthService>(context);
+    final user = auth.currentUser;
+    final bottomBarHeight = kBottomNavigationBarHeight;
+
+    return Scaffold(
+      backgroundColor: AppColors.lightGrey,
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: bottomBarHeight + 16,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    height: 72,
+                    width: 72,
+                    decoration: const BoxDecoration(
+                      color: AppColors.navy,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: 36,
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 36,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Настёна Теш',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user?.name ?? 'Гость',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.dark,
+                          ),
                         ),
-                      ),
-                      Text(
-                        'ateshkina@bk.ru',
-                        style: TextStyle(fontSize: 16, color: AppColors.navy),
-                      ),
-                    ],
+                        Text(
+                          user?.email ?? '',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: AppColors.navy,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            const Text(
-              'Мои покупки',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.dark,
+                ],
               ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                itemCount: _purchases.length,
-                itemBuilder: (context, index) {
-                  final purchase = _purchases[index];
-                  return Stack(
-                    children: [
-                      _buildPurchaseCard(
-                        purchase['title'] as String,
-                        purchase['price'] as String,
-                        purchase['active'] as bool,
-                      ),
-                      if (!(purchase['active'] as bool))
+              const SizedBox(height: 32),
+              const Text(
+                'Мои покупки',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.dark,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: _purchases.length,
+                  itemBuilder: (context, index) {
+                    final purchase = _purchases[index];
+                    final completed = purchase['completed'] as bool;
+                    final title = purchase['title'] as String;
+                    final price = purchase['price'] as String;
+                    final routeId = purchase['id'] as int;
+
+                    return Stack(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            if (!completed) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => PurchasedRouteScreen(
+                                    routeTitle: title,
+                                    steps: _demoStepsFor(title),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          child: _buildPurchaseCard(title, price, completed),
+                        ),
                         Positioned(
                           right: 8,
                           bottom: 8,
                           child: GestureDetector(
-                            onTap: () => showReviewBottomSheet(
-                              context,
-                              routeName: purchase['title'] as String,
-                              onReviewSubmitted: _handleReviewSubmitted,
-                            ),
+                            onTap: () {
+                              final auth = Provider.of<AuthService>(
+                                context,
+                                listen: false,
+                              );
+                              final currentUser = auth.currentUser;
+                              if (currentUser?.id != null) {
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(20),
+                                    ),
+                                  ),
+                                  builder: (context) => ReviewBottomSheet(
+                                    routeId: routeId,
+                                    userId: currentUser!.id!,
+                                    routeName: title,
+                                  ),
+                                );
+                              }
+                            },
                             child: Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
@@ -125,36 +197,44 @@ class _PersonalCabinetScreenState extends State<PersonalCabinetScreen> {
                             ),
                           ),
                         ),
-                    ],
-                  );
-                },
+                      ],
+                    );
+                  },
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: widget.onLogout,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.navy,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final auth = Provider.of<AuthService>(
+                      context,
+                      listen: false,
+                    );
+                    await auth.logout();
+                    widget.onLogout?.call();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.navy,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Выйти',
+                    style: TextStyle(fontSize: 18, color: AppColors.lightGrey),
                   ),
                 ),
-                child: const Text(
-                  'Выйти',
-                  style: TextStyle(fontSize: 18, color: AppColors.lightGrey),
-                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildPurchaseCard(String title, String price, bool active) {
+  Widget _buildPurchaseCard(String title, String price, bool completed) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -176,11 +256,11 @@ class _PersonalCabinetScreenState extends State<PersonalCabinetScreen> {
               height: 48,
               width: 48,
               decoration: BoxDecoration(
-                color: active ? AppColors.navy : Colors.grey[400],
+                color: completed ? Colors.grey[400] : AppColors.navy,
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                active ? Icons.play_arrow : Icons.check,
+                completed ? Icons.check : Icons.play_arrow,
                 color: Colors.white,
                 size: 24,
               ),
@@ -202,9 +282,9 @@ class _PersonalCabinetScreenState extends State<PersonalCabinetScreen> {
                     style: const TextStyle(fontSize: 16, color: AppColors.navy),
                   ),
                   Text(
-                    active ? 'Активна' : 'Пройдено',
+                    completed ? 'Пройдено' : 'Не пройдено',
                     style: TextStyle(
-                      color: active ? AppColors.orange : Colors.grey[600],
+                      color: completed ? Colors.grey[600] : AppColors.orange,
                       fontSize: 12,
                     ),
                   ),
